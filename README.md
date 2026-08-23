@@ -17,7 +17,7 @@ I am an undergraduate Electrical Engineering student focusing on power grid mode
 
 ## Technical Portfolio Roadmap
 
-Below is the index of core engineering repositories being developed across my 30-day technical portfolio build:
+Below is the index of core engineering repositories being developed across my technical portfolio build:
 
 | Repository | Focus Area | Primary Methods / Algorithms | Target Verification |
 |---|---|---|---|
