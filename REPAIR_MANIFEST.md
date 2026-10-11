@@ -2,7 +2,7 @@
 
 **Recorded:** 2026-10-11 (Asia/Karachi)
 
-**Status:** **PARTIALLY COMPLETE**; see [AUDIT_REPORT.md](AUDIT_REPORT.md) for exact remote states, current evidence, and blockers.
+**Status:** **BLOCKED: NOT COMPLETE**; authenticated access is available, but this session cannot publish external-repository branches. See [AUDIT_REPORT.md](AUDIT_REPORT.md), especially Section J, for the live issue register, tests, PRs, and gate statuses.
 
 ## Scope and provenance
 
@@ -10,7 +10,7 @@ GitHub API access to all six external upstream repositories succeeded. The prior
 
 Initial profile documentation changes remain in the earlier commits `ca0c63bc3a2b5ccda044b4cbb4759ea6912360d7` and `46a0d2b56142d31c0ffc0de36462ece70f052660`; subsequent commits on the same fixed Arena branch add the audit and manifest corrections. The profile PR [#1](https://github.com/hariszafar740-lang/hariszafar740-lang/pull/1) is open against `main`; the exact final branch head and latest hosted check are recorded in the completion summary. Power Systems PR [#1](https://github.com/hariszafar740-lang/power-systems-newton-raphson-solver/pull/1), head `b2d650fa2bfb0e4a8098c63e2e4e9c48ad91f0f5`, already existed remotely and was not created or modified in this session; its description is empty and it has no reported checks. No other external repair PR exists.
 
-The Arena checkout is fixed to the profile repository branch; no other external branch or push can be created from this session. The profile report and this manifest are committed to the existing profile PR. The PV and Power local snapshots below remain unpushed; four other external source copies are currently absent.
+The Arena checkout is fixed to the profile repository branch; no other external branch or push can be created from this session. The profile report and manifest are on the existing profile PR. Power and PV repair snapshots remain unpushed. A later authenticated recheck fetched source-only bare mirrors for all six external repositories under `/home/user/phase2-readonly`; the other four repositories still have no repair snapshots or published branches. See the latest recheck at the end of this manifest.
 
 | Repository | Upstream URL | Audited default revision | Current source / publication state |
 |---|---|---|---|
@@ -78,7 +78,7 @@ The following 92-test snapshot came from the previous workspace's isolated repai
 - A broader selected Ruff profile remains non-clean on line length (`E501`), explicit exception messages (`TRY003`), intentional test assertions (`S101`), and four shell-free fixed-argv calls (`S603`). All other selected rules pass when only those reviewed categories are excluded.
 - Python 3.10 was **NOT RUN**. The profile documentation workflow passed on PR #1; other hosted workflows were **NOT RUN** in that previous snapshot. Hooks and live GitHub metadata writes were **NOT RUN**. The previous anonymous PV STC MPP/nameplate mismatch was open in that workspace; see `AUDIT_REPORT.md` for the newer local CEC-reference reconstruction and its publication limitation.
 
-## Current final-task recheck (2026-10-11)
+## Prior final-task recheck (2026-10-11; superseded by latest recheck below)
 
 ### Repository-by-repository evidence
 
@@ -109,4 +109,40 @@ At audited upstream revisions, Power and BESS READMEs badge Python 3.10+; the in
 
 ### Completion blocker
 
-The session can commit/push only to the existing profile branch. As a result, the external PR/branch requirements are unmet: Power has an independently existing PR that cannot be updated here; PV fixes remain in a no-Git codeload snapshot; BESS, inverter, energy, and portfolio repair copies are absent. The current label is **PARTIALLY COMPLETE**, not “published” or “fully verified.” No external default branch was modified, no PR was merged, and no release was published.
+At this prior recheck, the session could commit/push only to the profile branch. External PR/branch requirements were unmet: Power had an independent PR, PV fixes were in a no-Git snapshot, and other repair copies were absent. The then-current label was **PARTIALLY COMPLETE**. The latest access/test evidence and current **BLOCKED: NOT COMPLETE** status are in the section below; no external default branch was modified, no PR was merged, and no release was published.
+
+## Latest authenticated master-prompt recheck (2026-10-11)
+
+This section supersedes the “Prior final-task recheck” test counts and source-availability wording above. It is reconciled with [AUDIT_REPORT.md § J](AUDIT_REPORT.md#j-independent-final-master-prompt-recheck-2026-10-11).
+
+### Access and publication boundary
+
+Authenticated GitHub API access, source fetches, and repository `admin/push/pull` permissions were verified for all seven public repositories. Default heads and the existing profile/Power PR refs were fetched into read-only bare mirrors at `/home/user/phase2-readonly/` under `refs/audit/*`; no external branch was checked out, created, or modified. This is not an access/credential failure. The session is fixed to the profile repository branch, so it cannot publish commits or PR branches to the six external repositories.
+
+### Per-repository latest verified evidence
+
+| Repository | Source or PR head | Local tests/checks | Hosted checks and remote publication |
+|---|---|---|---|
+| Profile/docs | Current profile PR head at recheck entry `872f477e5eed8d8cab21fca7bbaf0eab31ff8794` | 3 tests passed, Ruff passed. | PR [#1](https://github.com/hariszafar740-lang/hariszafar740-lang/pull/1) open/unmerged; run [38116406468](https://github.com/hariszafar740-lang/hariszafar740-lang/actions/runs/38116406468) passed in 9 s on that SHA. |
+| Power Systems | Default `e4624ed9cc5870d7da0fd2de6e71d6fb9fa72cb7`; existing PR #1 head `b2d650fa2bfb0e4a8098c63e2e4e9c48ad91f0f5`. | PR-head tests 12 passed; remote `ruff check .` exits 1 (3 I001, 1 RUF059). Local style-only snapshot also has 12 passes and Ruff clean. Branch charging still mismatches MATPOWER. | Existing PR [#1](https://github.com/hariszafar740-lang/power-systems-newton-raphson-solver/pull/1) open/unmerged, empty body, no hosted checks. The session did not modify it. |
+| BESS | Default `0c4e9084cd20e8d545de4c4c7a41ca5cffc7f637`. | 8 tests passed; separate cold sweep reproduces −3.08e18 V minimum and 3.32e17 °C peak. | No repair commit, branch, PR, or hosted CI. |
+| Solar PV/MPPT | Default `270d22ab02b59be7478120c8ca8f12f9f784fbb1`; local CEC repair derived from it. | Upstream 4 tests passed but miss defects; local CEC snapshot 13 tests passed; independent STC result 300.11509781 W vs CEC 300.1152 W. | No repair commit/branch/PR/hosted run. Run [33242282675](https://github.com/hariszafar740-lang/solar-pv-mppt-dynamic-solver/actions/runs/33242282675) was a Dependabot graph update, not test CI. Original panel identity remains unknown. |
+| Inverter | Default `ca46d6c7f0fbceea47be5505ecd72bbf73e2b426`. | 10 tests passed; benchmark still imposes doubled current during the 50% sag. | No repair PR. Default workflow [34930029407](https://github.com/hariszafar740-lang/inverter-grid-control-solver/actions/runs/34930029407) failed at “Execute FRT Benchmark.” |
+| Energy model | Default `8e9e0e601b7d5e51493c814698733ef09bfa77d3`. | No tests collected (pytest exit 5). `main.py` solved to gas-only 150 MW / 3600 MWh, exit 0, with PyPSA 1.4.0/HiGHS 1.15.1. | No repair branch/PR or workflow. |
+| Portfolio | Default `eacef5237bac90a79901b9a79ba691b4fb911ff3`. | No tests collected (pytest exit 5). Missing-child CLI, audit, dashboard, and release false-success outputs reproduced in disposable copy. | No repair PR. Hosted integration [38106857816](https://github.com/hariszafar740-lang/ee-portfolio-master/actions/runs/38106857816) failed during child dependency/test steps. |
+
+For the test command, see Section J of the audit report. Seven successful executions total 62 pass instances across distinct baseline/PR/local-repair contexts (including two Power and two PV contexts); this is not a complete seven-repository repaired-branch total. Energy and portfolio each had no tests and exited 5.
+
+### Central repair register and final gates
+
+| Finding | Repair commit / PR | Latest status |
+|---|---|---|
+| Profile documentation accuracy | Profile PR #1, branch `arena/5483384b-hariszafar740-lang` (latest update is on the fixed session branch). | Fixed on profile PR; 3 local tests and hosted check passed; open/unmerged. |
+| IEEE-14 data and Newton-Raphson failure reporting | Pre-existing Power PR #1 at `b2d650fa2bfb0e4a8098c63e2e4e9c48ad91f0f5`. | Solver-history/error behavior and transformer/shunt support are present on the PR; four branch-B values remain wrong; 12 local tests pass; no hosted check; not merged. |
+| BESS temperature compounding/stale RC time constant | None. | Unresolved; current sweep remains physically impossible despite 8 passing baseline tests. |
+| PV nameplate and invalid-input handling | Local-only CEC repair snapshot, no commit or PR. | Replacement database record validated; original identity unresolved; upstream remains unfixed. |
+| Inverter sag/FRT behavior | None. | Unresolved; hosted default workflow fails. |
+| Energy renewable dispatch/time/cost assumptions | None. | Unresolved; no tests; gas-only result reproduced. |
+| Portfolio false success and missing-repo integration | None. | Unresolved; false PASS/SECURE/release behavior reproduced and hosted integration fails. |
+
+Gate A (repository identity/source access): **PASS**. Gates B–G (all source defects fixed; required engineering validation; tests on repaired heads; per-repository published PRs; hosted checks; clean portfolio integration): **FAIL**. Gate H (report/manifest reflect the latest evidence): **PASS after this update**. Gate I (no unsupported claims): **PASS**. Overall project completion remains **BLOCKED: NOT COMPLETE**.
