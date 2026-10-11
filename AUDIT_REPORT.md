@@ -1,9 +1,9 @@
 # Workspace Audit Report
 
-**Audit date:** 2026-10-11 (Asia/Karachi)<br>
-**Overall status (latest master-prompt recheck):** **BLOCKED: NOT COMPLETE** — authenticated read access to all seven repositories and owner-level push permissions are verified, but this Arena session is fixed to the profile branch and cannot publish external-repository branches. The profile PR is open and hosted-verified; the existing Power PR is partial and has no hosted checks; the PV CEC-reference repair is local only; BESS, inverter, energy, and portfolio repairs remain unpublished. No 100% completion claim is made. Section J is the latest live, source-verified recheck; earlier totals are historical unless expressly repeated there.<br>
-**Phase 1 baseline status:** **VERIFICATION FAILED** before repairs. Sections A–G preserve that pre-repair audit record; Section H is the previous Phase 2 workspace snapshot, and Section I records the current remote/workspace recheck and supersedes H's publication/status claims.<br>
-**Scope:** The current Git checkout is only `hariszafar740-lang`, fixed to `arena/5483384b-hariszafar740-lang`. Authenticated GitHub API access and source fetches succeeded for all six external repositories. During the latest recheck, read-only bare source mirrors were fetched into `/home/user/phase2-readonly` under custom `refs/audit/*` refs—no external work branch was checked out or changed. The two local repair snapshots are still only Power/PV; the other repositories have source-only snapshots, not repair work. The profile PR remains open; the Power Systems PR is pre-existing. No external default branch was modified.
+**Audit date:** 2026-10-11 (UTC)<br>
+**Status (current profile-only follow-up):** **BLOCKED: NOT COMPLETE** — this Arena session is attached only to the profile/docs repository. PR #1 was verified merged into `main` as `5669c4d8cb510c47e0fac987be1b23cbac6e86ce`. This follow-up updates the profile audit documentation and its regression tests only. The six separate engineering repositories were not live-rechecked or modified in this session. Sections A–J preserve earlier audit evidence, with Section J explicitly historical for this follow-up; none of that is represented as a current remote-head verification. No seven-repository completion claim is made.<br>
+**Current checkout:** `/home/user/hariszafar740-lang`, fixed branch `arena/be8b3b2e-hariszafar740-lang`, initial commit `cf7c288a4e6ed4ff901c9c2cf2353745200c03bd`; verified default branch `main` was at merge commit `5669c4d8cb510c47e0fac987be1b23cbac6e86ce`. This repository contains profile documentation and audit records, not the engineering solver source. Work in this turn is constrained to the profile repository and the fixed branch.<br>
+**Historical evidence:** Earlier sections describe prior snapshots and live queries performed during earlier turns on 2026-10-11. In particular, Section J's six external repository heads, PR/workflow states, reproductions, and test results are historical leads; re-verify them in repository-attached sessions before treating them as current.
 
 ## A. Scope, provenance, and safety
 
@@ -352,9 +352,9 @@ The prior workspace’s 92 passing tests remain historical evidence only; its ot
 
 **Final label at the time of Section I: PARTIALLY COMPLETE.** This status and the 28-test snapshot are superseded by Section J below. The repair manifest preserves historical changed-path inventories separately from the newer verified state.
 
-## J. Independent final master-prompt recheck (2026-10-11)
+## J. Prior independent final master-prompt recheck (2026-10-11; historical snapshot, superseded for this follow-up)
 
-**Current label: BLOCKED: NOT COMPLETE.** This section independently rechecks all seven live repositories, the two existing PRs, exact remote heads, test suites, failing engineering behaviors, and the current session's publication boundary. It supersedes any earlier “source unavailable” phrasing: source fetch access succeeded; external repair copies/branches are a separate question.
+**Status at that prior recheck: BLOCKED: NOT COMPLETE.** This section records the seven-repository source/PR/workflow snapshot observed during an earlier turn. The current profile-only follow-up did not repeat those external queries; external default heads, PRs, workflows, and repair status below are not asserted as current. The historical archive/snapshot results remain useful leads, not proof of current remote state.
 
 ### Access, exact repository identities, and GitHub state
 
@@ -453,4 +453,69 @@ Additional exact source-level reproductions:
 | H — Report/manifest match verified reality | **PASS after this update** | Section J separates actual remote PR work from unmerged/default/local-only source and records the current test/CI evidence. |
 | I — No unsupported completion claims | **PASS** | No PR, source fix, test, host run, physical validation, or standards claim is marked complete without evidence. |
 
-**Completion declaration:** The project is **not complete**. The remote source repositories are accessible, but no source repair for the external repos can be committed or published from this fixed profile-only Arena session. The exact remaining work is to correct Power branch charging and complete its reference tests; implement/test the BESS, inverter, energy, and portfolio repairs; publish all applicable changes in their own repositories/PRs; obtain hosted checks on those heads; and rerun clean-checkout integration. No GitHub default branch was changed, no external branch was created/pushed, and no PR was merged.
+**Completion declaration at the prior recheck:** The project was **not complete**. The remaining-work list and external publication limits were recorded at that point; see Section K for the current profile-only follow-up.
+
+## K. Current profile-only follow-up (2026-10-11)
+
+**Scope.** This turn is attached only to `hariszafar740-lang/hariszafar740-lang`. I inspected and modified only this checkout on the fixed branch `arena/be8b3b2e-hariszafar740-lang`. I did not query, fetch, check out, or change any of the six separate engineering repositories. Section J is the last prior multi-repository snapshot; its external SHAs, PR/workflow states, local copies, reproductions, and test totals are historical and must be rechecked in repository-attached sessions before being treated as current.
+
+### Live verification for the profile repository
+
+| Evidence | Verified result |
+|---|---|
+| Repository / permission | `gh repo view` returned `hariszafar740-lang/hariszafar740-lang`, default branch `main`, `viewerPermission=ADMIN`; `gh auth status` succeeded for the configured GitHub account. |
+| Fixed working branch at entry | `arena/be8b3b2e-hariszafar740-lang`, starting at `cf7c288a4e6ed4ff901c9c2cf2353745200c03bd`; clean working tree at entry. The README, existing tests, workflow, and dependency file matched the merged `origin/main` tree at entry. |
+| Current default branch | `git ls-remote origin refs/heads/main` returned `5669c4d8cb510c47e0fac987be1b23cbac6e86ce`. |
+| Prior profile PR #1 | `gh pr view 1` returned `MERGED`, base `main`, head `arena/5483384b-hariszafar740-lang` at `cf7c288a4e6ed4ff901c9c2cf2353745200c03bd`, merge commit `5669c4d8cb510c47e0fac987be1b23cbac6e86ce`, merged `2026-10-11T06:21:07Z`. This verifies the user-provided merge report. |
+| Hosted check for PR #1 | `test-profile-docs` run [38117428344](https://github.com/hariszafar740-lang/hariszafar740-lang/actions/runs/38117428344) completed `SUCCESS` on PR #1 head `cf7c288a4e6ed4ff901c9c2cf2353745200c03bd` (9 seconds). This is historical evidence for PR #1, not a check on the new follow-up changes. |
+| PR state at initial preparation | `gh pr list --state all` showed only PR #1, merged; the documentation follow-up had not yet been committed or published at that point. |
+
+### Profile-repository changes and local validation
+
+This repository is documentation-only; there is no power-flow, PV, BESS, inverter, energy-optimization, or portfolio implementation here to repair. The prior merged README capability corrections remain unchanged. This follow-up:
+
+- Revises the report and manifest introductions so PR #1 is accurately marked merged, and clearly distinguishes this current profile-only review from the historical six-repository snapshot.
+- Changes the former Section J and matching manifest heading to explicitly mark the seven-repository snapshot as historical for this follow-up.
+- Adds this Section K and a corresponding current manifest section, including the profile merge evidence, scope boundary, historical external findings, local test evidence, unresolved work, and gates.
+- Adds `tests/test_audit_record.py` to guard the merged PR SHA, fixed session branch, and the non-current status of prior external findings.
+- Does not change `README.md`, model source, external repositories, or external repair claims.
+
+Local validation was run with Python `3.11.2` in disposable `/tmp/profile-followup-venv` (pytest `9.1.1`, Ruff `0.17.0`):
+
+| Command | Result |
+|---|---|
+| `PYTHONDONTWRITEBYTECODE=1 /tmp/profile-followup-venv/bin/python -m pytest -q -p no:cacheprovider tests/` | **6 passed, 0 failed, 0 skipped** (exit 0). |
+| `/tmp/profile-followup-venv/bin/ruff check .` | **PASS**, no findings (exit 0). Ruff was installed in the temporary validation environment; it is not a declared project dependency. |
+| `git diff --check` | **PASS**, no whitespace errors. |
+
+The repository's hosted workflow is `.github/workflows/docs-ci.yml`; it runs the pytest suite on Python 3.11 for pull requests targeting `main`. PR #1's check above is not evidence for this new branch. The new branch's hosted result must be read from the actual new PR head after publication; this report does not mark an unrun check as passed.
+
+### Seven-repository issue register carried forward as historical leads
+
+The following rows summarize the prior Section J findings so that the remaining work is visible. “Historical” means the last evidence recorded in Section J; this follow-up did not reproduce the issue or revalidate the remote SHA/status. Do not treat any old external PR state as live without checking it in the target repository.
+
+| Repository / affected files | Historical finding and prior reproduction | Prior repair/test/PR evidence | Current-session status and next action |
+|---|---|---|---|
+| Profile/docs — `README.md`, `tests/test_profile_readme.py` | Dense Jacobian was described as sparse; audit language overstated model validation. | Corrected in merged profile PR #1 at `cf7c288a4e6ed4ff901c9c2cf2353745200c03bd`; prior hosted run 38117428344 passed. This follow-up's six-test suite covers the report boundary and profile assertions. | **Fixed/verified for profile docs**; new follow-up publication/check is recorded after this turn's push. |
+| Power Systems — `src/ieee14_data.py`, `src/nr_solver.py`, Y-bus/flow modules | At prior PR head `b2d650fa2bfb0e4a8098c63e2e4e9c48ad91f0f5`, four branch charging values disagreed with pinned MATPOWER `case14.m`; prior head suite had 12 passes, but no tests for all reference data. See Section J for exact branch values and command. | Prior existing PR #1 added tap/shunt support and solver failure handling; historical remote PR had no hosted checks. | **Not live-rechecked here; unresolved lead.** New Power-attached session must re-verify PR #1/head and pinned data, add full reference/failure regressions, then publish/update PR and run hosted checks. |
+| BESS — `src/sensitivity_analysis.py`, `src/bess_model.py` | Prior default SHA `0c4e9084cd20e8d545de4c4c7a41ca5cffc7f637`: repeated Arrhenius scaling and stale RC time constant; prior command in Section J returned about `-3.0753e18 V` and `3.3221e17 °C` at 10 °C/1C. | Prior baseline suite: 8 passed but missed the cold sweep; no repair PR recorded. | **Not live-rechecked here; unresolved lead.** Recompute from fixed reference resistances and test current, temperature, charge/discharge, and updated time constant in a BESS-attached session. |
+| Solar PV — `src/pv_model.py`, PV tests | Prior default SHA `270d22ab02b59be7478120c8ca8f12f9f784fbb1`: STC peak `266.898 W` vs configured `300.080 W`; `G=-1` produced complex arrays. Original module identity was not found. | Prior upstream suite: 4 passed; separate local-only CEC replacement used the pinned AU Optronics PM060MBR_300W record and had 13 passes, but no Git branch/commit/PR/hosted check. | **Not live-rechecked here; upstream status unresolved.** Verify provenance; do not call CEC replacement the original module. Revalidate input domains, endpoints, temperatures, irradiance, and MPP in a PV-attached session. |
+| Inverter/FRT — `src/benchmark.py`, `tests/test_compliance.py`, workflow | Prior default SHA `ca46d6c7f0fbceea47be5505ecd72bbf73e2b426`: benchmark halved voltage while doubling imposed currents, so P/Q remained nearly unchanged; prior tests passed but did not test sag control. | Historical run [34930029407](https://github.com/hariszafar740-lang/inverter-grid-control-solver/actions/runs/34930029407) failed at “Execute FRT Benchmark”; no repair PR recorded. | **Not live-rechecked here; unresolved lead.** Add a time-consistent, explicitly scoped fault response and test voltage/current/power, limits, and recovery; do not infer grid-code compliance. |
+| Energy model — `main.py`, model/tests | Prior default SHA `8e9e0e601b7d5e51493c814698733ef09bfa77d3`: 24-hour constant 150 MW load, no renewable availability profiles; solved gas-only 150 MW/3600 MWh; pytest collected no tests (exit 5). | No prior repair PR/workflow recorded; old model result is software output, not regional validation. | **Not live-rechecked here; unresolved lead.** Document synthetic profiles/horizon/units and add balance, availability, and storage/formulation tests in an Energy-attached session. |
+| Portfolio — `portfolio_cli.py`, `audit_portfolio.py`, `generate_portfolio_report.py`, `build_release.py`, workflows | Prior default SHA `eacef5237bac90a79901b9a79ba691b4fb911ff3`: absent child repositories led to false success/SECURE/empty release outputs; pytest exit 5. | Historical hosted run [38106857816](https://github.com/hariszafar740-lang/ee-portfolio-master/actions/runs/38106857816) failed in child dependency/test steps; no repair PR recorded. | **Not live-rechecked here; unresolved lead.** Add reproducible pinned child dependencies/checkouts, truthful BLOCKED/FAIL propagation, and clean-checkout/artifact tests in a Portfolio-attached session. |
+
+### Current acceptance-gate status after this profile-only review
+
+| Gate | Status | Evidence |
+|---|---|---|
+| A — All seven repositories identified and reviewed | **FAIL for current acceptance** | This turn live-verified only the profile repository. The earlier Section J seven-repository inventory is historical and not a fresh source/PR/workflow check. |
+| B — Every valid reproducible defect fixed or not applicable | **FAIL** | Only the profile documentation issue is covered here; six engineering-repository leads remain unverified/unrepaired in this session. |
+| C — Required engineering validation | **FAIL** | No power-flow/BESS/PV/inverter/energy engineering model source was changed or validated in this profile-only turn. Historical numerical results are not physical validation. |
+| D — Tests/checks on repaired heads | **FAIL** | Profile-local tests and Ruff pass. No current external repair heads were tested; the follow-up PR check remains to be verified after publication and must not be inferred from PR #1. |
+| E — Applicable published commits and open PRs | **FAIL for seven-repository scope** | This turn publishes profile audit/test changes only. The six engineering repairs are not published by this profile-bound session. |
+| F — Hosted checks on actual latest repair PR heads | **FAIL for seven-repository scope** | Profile check status is recorded on its current follow-up PR after publication. External repair PR heads/checks have not been reverified here. |
+| G — Portfolio clean-checkout integration cannot report false success | **FAIL** | No portfolio source or workflow was changed/tested in this session. |
+| H — Report/manifest match verified facts and scope | **PASS** | Sections J and the corresponding manifest section are labeled historical; Section K records only the current profile evidence and explicit unknowns. |
+| I — No unsupported repair/test/commit/PR/physical/compliance claims | **PASS** | External items are labeled historical/unverified; no physical validation or standards-compliance claim is made. |
+
+**Completion declaration:** The profile repository's earlier PR #1 merge is verified. This turn completes only the profile documentation/audit-record follow-up and its regression suite. The seven-repository engineering audit is **not complete**: use separate Arena sessions attached to Power Systems, BESS, Solar PV, Inverter/FRT, Energy Model, and Portfolio to recheck current remotes and finish those source repairs. No external repository was accessed or modified in this follow-up.
