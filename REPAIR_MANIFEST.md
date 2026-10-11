@@ -171,3 +171,9 @@ Gate A (repository identity/source access): **PASS at that prior recheck only**.
 ### External repair state and next sessions
 
 Section J and the historical tables above retain prior reports for the six external repositories, but this turn does not assert their current SHA, PR, or CI state. No external source fix, test, commit, branch, PR, or hosted check was made in this session. Separate Arena sessions attached to Power Systems, BESS, Solar PV/MPPT, Inverter/FRT, Energy Model, and Portfolio are required; each must verify current default/PR heads before repairing and publishing. See `AUDIT_REPORT.md` Section K for the finding summaries and gate status.
+
+### Post-publication verification of report-only refresh
+
+After the second report commit, remote PR #2 and `git ls-remote` both showed head `a95f6fd9a9fadabb293869d0fa8d3d4947615aac` on `arena/be8b3b2e-hariszafar740-lang`; the PR was open and unmerged. Hosted run [38118493847](https://github.com/hariszafar740-lang/hariszafar740-lang/actions/runs/38118493847) completed successfully for `test-profile-docs` on that exact SHA (9 seconds), and `gh pr checks 2` returned `pass`. The run emitted only the non-failing Node.js 20-to-24 runtime and Ubuntu 26 migration notices recorded in the audit report.
+
+This additional evidence note triggers another docs-only workflow run on its own head. Its outcome is not pre-claimed here; consult the live [PR #2 checks page](https://github.com/hariszafar740-lang/hariszafar740-lang/pull/2/checks) for the authoritative status. The final response gives the exact observed final head and check.
