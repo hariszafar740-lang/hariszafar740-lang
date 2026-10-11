@@ -2,13 +2,13 @@
 
 **Recorded:** 2026-10-11 (UTC)
 
-**Status (current profile-only follow-up):** **BLOCKED: NOT COMPLETE**. The merged profile PR #1 was verified at `5669c4d8cb510c47e0fac987be1b23cbac6e86ce`; this turn updates only the profile repository on the fixed Arena branch. The other six repositories and their earlier findings are not live-rechecked here. See [AUDIT_REPORT.md](AUDIT_REPORT.md) Section K for this turn's profile evidence and the separate-session boundary; Sections A–J below are historical records from earlier work.
+**Status (current profile-only follow-up):** **BLOCKED: NOT COMPLETE**. The merged profile PR #1 was verified at `5669c4d8cb510c47e0fac987be1b23cbac6e86ce`. The profile-only audit/test update is published on fixed branch `arena/be8b3b2e-hariszafar740-lang` in open PR [#2](https://github.com/hariszafar740-lang/hariszafar740-lang/pull/2); first published commit `40a4413d714c954c0faed443d7be4382bcaf6f19` passed hosted run [38118409006](https://github.com/hariszafar740-lang/hariszafar740-lang/actions/runs/38118409006). The other six repositories and their earlier findings are not live-rechecked here. See [AUDIT_REPORT.md](AUDIT_REPORT.md) Section K for this turn's profile evidence and the separate-session boundary; Sections A–J below are historical records from earlier work.
 
 ## Scope and provenance
 
 This follow-up verified the current profile repository and PR #1 only. It did not query, fetch, check out, or modify any of the six separate engineering repositories. The authenticated multi-repository queries, source snapshots, local-only repairs, PR/workflow states, and external SHA values recorded later in this manifest describe an earlier 2026-10-11 recheck; do not treat them as current until verified in separate target-repository sessions.
 
-The profile PR #1 is **MERGED**, not open: its head was `cf7c288a4e6ed4ff901c9c2cf2353745200c03bd`, its merge commit/default `main` head is `5669c4d8cb510c47e0fac987be1b23cbac6e86ce`, and the merge was verified from GitHub. This follow-up is being made on the required fixed branch `arena/be8b3b2e-hariszafar740-lang`; it does not reuse or alter the prior `arena/5483384b-hariszafar740-lang` branch. Publication and hosted-check details for the follow-up are recorded in the latest section below after verification.
+The profile PR #1 is **MERGED**, not open: its head was `cf7c288a4e6ed4ff901c9c2cf2353745200c03bd`, its merge commit/default `main` head is `5669c4d8cb510c47e0fac987be1b23cbac6e86ce`, and the merge was verified from GitHub. The current follow-up is published on the required fixed branch `arena/be8b3b2e-hariszafar740-lang` in PR #2; it does not reuse or alter the prior `arena/5483384b-hariszafar740-lang` branch. Its first commit and hosted-check evidence are recorded below.
 
 ### Prior seven-repository snapshot (2026-10-11; historical, not live-verified in this follow-up)
 
@@ -165,7 +165,8 @@ Gate A (repository identity/source access): **PASS at that prior recheck only**.
 - `README.md`, engineering model sources, and the six external repositories are unchanged.
 - Python 3.11.2, pytest 9.1.1 in temporary `/tmp/profile-followup-venv`: `PYTHONDONTWRITEBYTECODE=1 /tmp/profile-followup-venv/bin/python -m pytest -q -p no:cacheprovider tests/` — **6 passed, 0 failed, 0 skipped**.
 - Ruff 0.17.0 in that temporary environment: `/tmp/profile-followup-venv/bin/ruff check .` — **PASS**, zero findings. `git diff --check` — **PASS**.
-- The new profile PR/branch publication and its hosted run were not yet established at the time of this local preparation record; those values are added below after publication. Do not infer a pass from PR #1's old run.
+- Published on fixed branch `arena/be8b3b2e-hariszafar740-lang` in open, unmerged PR [#2](https://github.com/hariszafar740-lang/hariszafar740-lang/pull/2). The first published follow-up commit is `40a4413d714c954c0faed443d7be4382bcaf6f19`; remote ref and PR head matched at verification.
+- Hosted run [38118409006](https://github.com/hariszafar740-lang/hariszafar740-lang/actions/runs/38118409006), workflow job `test-profile-docs`, passed on that exact PR #2 head in 8 seconds. GitHub emitted informational, non-failing notices: actions/checkout@v4 and actions/setup-python@v5 target Node.js 20 but ran under Node.js 24; `ubuntu-latest` is scheduled to migrate to Ubuntu 26 on 2026-10-19. The run validates that commit only; a later report-refresh commit triggers a new check.
 
 ### External repair state and next sessions
 
