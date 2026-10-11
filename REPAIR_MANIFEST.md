@@ -1,20 +1,20 @@
 # Phase 2 repair manifest
 
-**Recorded:** 2026-10-11 (Asia/Karachi)
+**Recorded:** 2026-10-11 (UTC)
 
-**Status:** **BLOCKED: NOT COMPLETE**; authenticated access is available, but this session cannot publish external-repository branches. See [AUDIT_REPORT.md](AUDIT_REPORT.md), especially Section J, for the live issue register, tests, PRs, and gate statuses.
+**Status (current profile-only follow-up):** **BLOCKED: NOT COMPLETE**. The merged profile PR #1 was verified at `5669c4d8cb510c47e0fac987be1b23cbac6e86ce`. The profile-only audit/test update is published on fixed branch `arena/be8b3b2e-hariszafar740-lang` in open PR [#2](https://github.com/hariszafar740-lang/hariszafar740-lang/pull/2); first published commit `40a4413d714c954c0faed443d7be4382bcaf6f19` passed hosted run [38118409006](https://github.com/hariszafar740-lang/hariszafar740-lang/actions/runs/38118409006). The other six repositories and their earlier findings are not live-rechecked here. See [AUDIT_REPORT.md](AUDIT_REPORT.md) Section K for this turn's profile evidence and the separate-session boundary; Sections A–J below are historical records from earlier work.
 
 ## Scope and provenance
 
-GitHub API access to all six external upstream repositories succeeded. The prior isolated `/home/user/phase2-repairs` repair copies were absent at the start of the current final-task recheck. The recheck reconstructed codeload snapshots only for the exact Power Systems PR head and the audited PV baseline; neither has `.git` metadata. This is not represented as recovering their histories. All six audited upstream branch heads (including the PV repository's `feat/mppt-control-algorithms` default) remain at the revisions shown below; no upstream default branch was changed.
+This follow-up verified the current profile repository and PR #1 only. It did not query, fetch, check out, or modify any of the six separate engineering repositories. The authenticated multi-repository queries, source snapshots, local-only repairs, PR/workflow states, and external SHA values recorded later in this manifest describe an earlier 2026-10-11 recheck; do not treat them as current until verified in separate target-repository sessions.
 
-Initial profile documentation changes remain in the earlier commits `ca0c63bc3a2b5ccda044b4cbb4759ea6912360d7` and `46a0d2b56142d31c0ffc0de36462ece70f052660`; subsequent commits on the same fixed Arena branch add the audit and manifest corrections. The profile PR [#1](https://github.com/hariszafar740-lang/hariszafar740-lang/pull/1) is open against `main`; the exact final branch head and latest hosted check are recorded in the completion summary. Power Systems PR [#1](https://github.com/hariszafar740-lang/power-systems-newton-raphson-solver/pull/1), head `b2d650fa2bfb0e4a8098c63e2e4e9c48ad91f0f5`, already existed remotely and was not created or modified in this session; its description is empty and it has no reported checks. No other external repair PR exists.
+The profile PR #1 is **MERGED**, not open: its head was `cf7c288a4e6ed4ff901c9c2cf2353745200c03bd`, its merge commit/default `main` head is `5669c4d8cb510c47e0fac987be1b23cbac6e86ce`, and the merge was verified from GitHub. The current follow-up is published on the required fixed branch `arena/be8b3b2e-hariszafar740-lang` in PR #2; it does not reuse or alter the prior `arena/5483384b-hariszafar740-lang` branch. Its first commit and hosted-check evidence are recorded below.
 
-The Arena checkout is fixed to the profile repository branch; no other external branch or push can be created from this session. The profile report and manifest are on the existing profile PR. Power and PV repair snapshots remain unpushed. A later authenticated recheck fetched source-only bare mirrors for all six external repositories under `/home/user/phase2-readonly`; the other four repositories still have no repair snapshots or published branches. See the latest recheck at the end of this manifest.
+### Prior seven-repository snapshot (2026-10-11; historical, not live-verified in this follow-up)
 
-| Repository | Upstream URL | Audited default revision | Current source / publication state |
+| Repository | Upstream URL | Audited default revision | Publication state at prior recheck (historical) |
 |---|---|---|---|
-| Profile/docs | https://github.com/hariszafar740-lang/hariszafar740-lang | `796e92fdb323dd1a3bc23291992533e7a200d621` | Pre-follow-up head `49686195116983ff0109e01fc67a345dbb67fa0e`; PR #1 open; run [38116203701](https://github.com/hariszafar740-lang/hariszafar740-lang/actions/runs/38116203701) passed. This report correction is pushed to the same PR; final head/check are verified in the completion summary. |
+| Profile/docs | https://github.com/hariszafar740-lang/hariszafar740-lang | `796e92fdb323dd1a3bc23291992533e7a200d621` | At that earlier point, PR #1 was open at pre-follow-up head `49686195116983ff0109e01fc67a345dbb67fa0e`; run [38116203701](https://github.com/hariszafar740-lang/hariszafar740-lang/actions/runs/38116203701) passed. It was subsequently merged, as verified in the current profile-only section below. |
 | Power Systems | https://github.com/hariszafar740-lang/power-systems-newton-raphson-solver | `e4624ed9cc5870d7da0fd2de6e71d6fb9fa72cb7` (`main`) | Existing PR #1 branch `arena/34bbd749-power-systems-newton-raph-s`; head `b2d650fa2bfb0e4a8098c63e2e4e9c48ad91f0f5`; open, empty description body, no reported checks. |
 | Solar PV/MPPT | https://github.com/hariszafar740-lang/solar-pv-mppt-dynamic-solver | `270d22ab02b59be7478120c8ca8f12f9f784fbb1` (`feat/mppt-control-algorithms`) | Local CEC-reference repair snapshot at `/home/user/phase2-repairs/solar-pv-mppt-dynamic-solver`; no Git metadata/branch/PR. The successful Actions run `33242282675` was a Dependabot/pip graph update, not a test. |
 | BESS | https://github.com/hariszafar740-lang/bess-soc-dynamics-solver | `0c4e9084cd20e8d545de4c4c7a41ca5cffc7f637` (`main`) | No repair source copy, branch, or PR in current workspace. |
@@ -111,9 +111,9 @@ At audited upstream revisions, Power and BESS READMEs badge Python 3.10+; the in
 
 At this prior recheck, the session could commit/push only to the profile branch. External PR/branch requirements were unmet: Power had an independent PR, PV fixes were in a no-Git snapshot, and other repair copies were absent. The then-current label was **PARTIALLY COMPLETE**. The latest access/test evidence and current **BLOCKED: NOT COMPLETE** status are in the section below; no external default branch was modified, no PR was merged, and no release was published.
 
-## Latest authenticated master-prompt recheck (2026-10-11)
+## Prior authenticated master-prompt recheck (2026-10-11; historical, not re-run in this profile-only follow-up)
 
-This section supersedes the “Prior final-task recheck” test counts and source-availability wording above. It is reconciled with [AUDIT_REPORT.md § J](AUDIT_REPORT.md#j-independent-final-master-prompt-recheck-2026-10-11).
+This section superseded the then-earlier “Prior final-task recheck” at the time. It is retained as historical evidence and reconciled with [AUDIT_REPORT.md § J](AUDIT_REPORT.md#j-prior-independent-final-master-prompt-recheck-2026-10-11-historical-snapshot-superseded-for-this-follow-up). The current follow-up verifies only the profile repository; external status must be rechecked in target-repository sessions.
 
 ### Access and publication boundary
 
@@ -145,4 +145,35 @@ For the test command, see Section J of the audit report. Seven successful execut
 | Energy renewable dispatch/time/cost assumptions | None. | Unresolved; no tests; gas-only result reproduced. |
 | Portfolio false success and missing-repo integration | None. | Unresolved; false PASS/SECURE/release behavior reproduced and hosted integration fails. |
 
-Gate A (repository identity/source access): **PASS**. Gates B–G (all source defects fixed; required engineering validation; tests on repaired heads; per-repository published PRs; hosted checks; clean portfolio integration): **FAIL**. Gate H (report/manifest reflect the latest evidence): **PASS after this update**. Gate I (no unsupported claims): **PASS**. Overall project completion remains **BLOCKED: NOT COMPLETE**.
+Gate A (repository identity/source access): **PASS at that prior recheck only**. Gates B–G (all source defects fixed; required engineering validation; tests on repaired heads; per-repository published PRs; hosted checks; clean portfolio integration): **FAIL**. Gate H (report/manifest reflect that snapshot): **PASS at that time**. Gate I (no unsupported claims): **PASS**. This is historical; the current profile-only gate table is in the section below.
+
+## Current profile-only follow-up (2026-10-11)
+
+**Scope:** Only `hariszafar740-lang/hariszafar740-lang` was accessed in this follow-up. The Arena branch is fixed to `arena/be8b3b2e-hariszafar740-lang`; no external repository was queried, fetched, checked out, or modified.
+
+### Verified profile repository state
+
+- Authenticated `gh` access succeeded; `gh repo view` identified default branch `main` and `viewerPermission=ADMIN`.
+- At entry, the fixed local branch pointed to `cf7c288a4e6ed4ff901c9c2cf2353745200c03bd`, with a clean working tree. `git ls-remote origin refs/heads/main` returned `5669c4d8cb510c47e0fac987be1b23cbac6e86ce`.
+- `gh pr view 1` verified PR [#1](https://github.com/hariszafar740-lang/hariszafar740-lang/pull/1) is **MERGED**: head branch `arena/5483384b-hariszafar740-lang`, head SHA `cf7c288a4e6ed4ff901c9c2cf2353745200c03bd`, merge commit `5669c4d8cb510c47e0fac987be1b23cbac6e86ce`, merged `2026-10-11T06:21:07Z`.
+- Its hosted job `test-profile-docs` passed on that historical PR #1 head in run [38117428344](https://github.com/hariszafar740-lang/hariszafar740-lang/actions/runs/38117428344) (9 seconds). That run does not validate this follow-up.
+
+### Changes and local checks
+
+- Modified `AUDIT_REPORT.md` and `REPAIR_MANIFEST.md`: correct PR #1 to merged, mark prior external multi-repository states as historical, add a current profile-only record, preserve unresolved external leads, and state gates/session restrictions honestly.
+- Added `tests/test_audit_record.py`: three regression tests for the verified merge SHA, fixed branch, and historical-vs-current boundary.
+- `README.md`, engineering model sources, and the six external repositories are unchanged.
+- Python 3.11.2, pytest 9.1.1 in temporary `/tmp/profile-followup-venv`: `PYTHONDONTWRITEBYTECODE=1 /tmp/profile-followup-venv/bin/python -m pytest -q -p no:cacheprovider tests/` — **6 passed, 0 failed, 0 skipped**.
+- Ruff 0.17.0 in that temporary environment: `/tmp/profile-followup-venv/bin/ruff check .` — **PASS**, zero findings. `git diff --check` — **PASS**.
+- Published on fixed branch `arena/be8b3b2e-hariszafar740-lang` in open, unmerged PR [#2](https://github.com/hariszafar740-lang/hariszafar740-lang/pull/2). The first published follow-up commit is `40a4413d714c954c0faed443d7be4382bcaf6f19`; remote ref and PR head matched at verification.
+- Hosted run [38118409006](https://github.com/hariszafar740-lang/hariszafar740-lang/actions/runs/38118409006), workflow job `test-profile-docs`, passed on that exact PR #2 head in 8 seconds. GitHub emitted informational, non-failing notices: actions/checkout@v4 and actions/setup-python@v5 target Node.js 20 but ran under Node.js 24; `ubuntu-latest` is scheduled to migrate to Ubuntu 26 on 2026-10-19. The run validates that commit only; a later report-refresh commit triggers a new check.
+
+### External repair state and next sessions
+
+Section J and the historical tables above retain prior reports for the six external repositories, but this turn does not assert their current SHA, PR, or CI state. No external source fix, test, commit, branch, PR, or hosted check was made in this session. Separate Arena sessions attached to Power Systems, BESS, Solar PV/MPPT, Inverter/FRT, Energy Model, and Portfolio are required; each must verify current default/PR heads before repairing and publishing. See `AUDIT_REPORT.md` Section K for the finding summaries and gate status.
+
+### Post-publication verification of report-only refresh
+
+After the second report commit, remote PR #2 and `git ls-remote` both showed head `a95f6fd9a9fadabb293869d0fa8d3d4947615aac` on `arena/be8b3b2e-hariszafar740-lang`; the PR was open and unmerged. Hosted run [38118493847](https://github.com/hariszafar740-lang/hariszafar740-lang/actions/runs/38118493847) completed successfully for `test-profile-docs` on that exact SHA (9 seconds), and `gh pr checks 2` returned `pass`. The run emitted only the non-failing Node.js 20-to-24 runtime and Ubuntu 26 migration notices recorded in the audit report.
+
+This additional evidence note triggers another docs-only workflow run on its own head. Its outcome is not pre-claimed here; consult the live [PR #2 checks page](https://github.com/hariszafar740-lang/hariszafar740-lang/pull/2/checks) for the authoritative status. The final response gives the exact observed final head and check.
