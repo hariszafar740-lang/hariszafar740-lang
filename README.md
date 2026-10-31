@@ -1,8 +1,11 @@
-# Haris Zafar — power systems, storage and energy-transition modelling
+# Haris Zafar, power systems, storage and energy-transition modelling
 
-Renewable-energy and power-systems engineer. Six Python repositories, 899 tests, and every published number reproduced by a test or a committed dataset.
+Renewable-energy and power-systems engineer.
+Six Python repositories, 899 tests, and every published number reproduced by a test or a committed dataset.
 
-**[Open the energy-transition workbench](https://hariszafar740-lang.github.io/energy-transition-model/workbench/)** · [grid explorer](https://hariszafar740-lang.github.io/power-systems-newton-raphson-solver/) · [portfolio dashboard](https://hariszafar740-lang.github.io/ee-portfolio-master/)
+I write the solvers, the tests that pin their numbers, and the pages that show the results, and a number that cannot be rerun seems to me not worth publishing.
+
+[Open the energy-transition workbench](https://hariszafar740-lang.github.io/energy-transition-model/workbench/) · [grid explorer](https://hariszafar740-lang.github.io/power-systems-newton-raphson-solver/) · [portfolio dashboard](https://hariszafar740-lang.github.io/ee-portfolio-master/)
 
 ## Verified results
 
@@ -17,11 +20,13 @@ Renewable-energy and power-systems engineer. Six Python repositories, 899 tests,
 
 ## Scope
 
-The six repositories are independent models; they do not represent one coupled physical system. Passing tests verify the documented software scenarios and are not evidence of hardware behavior, standards compliance, or engineering certification. The BESS thermal model is not a safety prediction and the inverter fault ride-through scenario is not certification.
+The six repositories are independent models; they do not represent one coupled physical system.
+Passing tests verify the documented software scenarios and are not evidence of hardware behavior, standards compliance, or engineering certification.
+The BESS thermal model is not a safety prediction and the inverter fault ride-through scenario is not certification.
 
 ## Local checks
 
-    python -m pip install -r requirements-dev.txt
-    python -m pytest -q tests/
+python -m pip install -r requirements-dev.txt python -m pytest -q tests/
 
-Issues and discussions are open on all six repositories. This page is checked by its own test suite on every push.
+Issues and discussions are open on all six repositories.
+This page is checked by its own test suite on every push.
