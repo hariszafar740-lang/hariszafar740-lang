@@ -18,6 +18,8 @@ I write the solvers, the tests that pin their numbers, and the pages that show t
 | [Grid-Forming Inverter Control Solver](https://github.com/hariszafar740-lang/inverter-grid-control-solver) | 47.95 A peak under a 0.15 p.u. sag, inside the 48 A limit | 116 |
 | [Central Portfolio Repository](https://github.com/hariszafar740-lang/ee-portfolio-master) | Re-runs every number above, then gates on ruff, bandit, zizmor, pip-audit | 11 |
 
+**All five in one environment:** [energy-systems-benchmarks](https://github.com/hariszafar740-lang/energy-systems-benchmarks) installs every package from PyPI and re-checks the headline number in each README.
+
 ## Scope
 
 The six repositories are independent models; they do not represent one coupled physical system.
