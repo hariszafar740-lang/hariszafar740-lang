@@ -22,6 +22,33 @@ I write the solvers, the tests that pin their numbers, and the pages that show t
 
 **Engineering note:** [what each number rests on, and where it breaks](notes/five-packages.md)
 
+<!-- verify:start -->
+
+## Verify it yourself
+
+The table above is built by running these commands against the published
+wheels, and the comment after each line is what it printed.
+
+Versions today: nr-powerflow-solver 1.0.2, pv-mppt-solver 1.0.1,
+bess-soc-dynamics-solver 1.0.0, inverter-grid-control-solver 1.0.0,
+energy-transition-model 1.0.0.
+
+```bash
+pip install nr-powerflow-solver pv-mppt-solver bess-soc-dynamics-solver \
+            inverter-grid-control-solver energy-transition-model
+
+nr-powerflow solve --case ieee14 --format json  # mismatch 5.98e-08 p.u. in 3 iterations
+pv-mppt iv -g 1000 -t 25 --json                 # P_mpp 300.115 W, fill factor 74.8 pct
+bess-sim pulse --json                           # min V 3.181 V, peak 30.97 C, SoC 0.25
+gfm-sim triad --json                            # largest real eigenvalue -3.030 1/s
+etm-sim --duality-report                        # LCOE 28.0555, gap -7.45e-09
+```
+
+Every number is re-checked on each push by [energy-systems-benchmarks](https://github.com/hariszafar740-lang/energy-systems-benchmarks),
+on two Python versions, installing from PyPI rather than from a source tree.
+
+<!-- verify:end -->
+
 ## Scope
 
 The six repositories are independent models; they do not represent one coupled physical system.
@@ -30,7 +57,10 @@ The BESS thermal model is not a safety prediction and the inverter fault ride-th
 
 ## Local checks
 
-python -m pip install -r requirements-dev.txt python -m pytest -q tests/
+```bash
+python -m pip install -r requirements-dev.txt
+python -m pytest -q tests/
+```
 
 Issues and discussions are open on all six repositories.
 This page is checked by its own test suite on every push.
