@@ -20,6 +20,8 @@ I write the solvers, the tests that pin their numbers, and the pages that show t
 
 **All five in one environment:** [energy-systems-benchmarks](https://github.com/hariszafar740-lang/energy-systems-benchmarks) installs every package from PyPI and re-checks the headline number in each README.
 
+**Engineering note:** [what each number rests on, and where it breaks](notes/five-packages.md)
+
 ## Scope
 
 The six repositories are independent models; they do not represent one coupled physical system.
