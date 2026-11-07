@@ -16,7 +16,7 @@ I write the solvers, the tests that pin their numbers, and the pages that show t
 | [Solar PV Dynamic MPPT Solver](https://github.com/hariszafar740-lang/solar-pv-mppt-dynamic-solver) | CEC extraction < 1e-8 A against pvlib Lambert-W; EN 50530 Sera dP-P&O 99.94 % | 230 |
 | [BESS SoC Dynamics Solver](https://github.com/hariszafar740-lang/bess-soc-dynamics-solver) | OCV and dU/dT tables < 5 uV against PyBaMM 26.10.1.1 | 185 |
 | [Grid-Forming Inverter Control Solver](https://github.com/hariszafar740-lang/inverter-grid-control-solver) | 47.95 A peak under a 0.15 p.u. sag, inside the 48 A limit | 116 |
-| [Central Portfolio Repository](https://github.com/hariszafar740-lang/ee-portfolio-master) | Re-runs every number above, then gates on ruff, bandit, zizmor, pip-audit | 11 |
+| [Central Portfolio Repository](https://github.com/hariszafar740-lang/ee-portfolio-master) | Re-runs the test suites behind every number above on Python 3.10 and 3.11, then deploys the dashboard | 11 |
 
 **All five in one environment:** [energy-systems-benchmarks](https://github.com/hariszafar740-lang/energy-systems-benchmarks) installs every package from PyPI and re-checks the headline number in each README.
 
