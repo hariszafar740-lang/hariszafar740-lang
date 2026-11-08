@@ -22,6 +22,8 @@ I write the solvers, the tests that pin their numbers, and the pages that show t
 
 **Engineering note:** [what each number rests on, and where it breaks](notes/five-packages.md)
 
+**Close-out:** [what exists, what it does not claim, and the one command that re-checks it](notes/close-out.md)
+
 <!-- verify:start -->
 
 ## Verify it yourself
