@@ -168,8 +168,10 @@ def main():
         add(False, "the engineering note is readable")
     else:
         for dist, _, _ in PACKAGES:
-            add(rows[dist]["measured"] in note and "%s %s" % (dist, rows[dist]["version"]) in note,
-                "the note carries %s" % dist, "the note has drifted")
+            carried = (rows[dist]["measured"] in note
+                       and "%s %s" % (dist, rows[dist]["version"]) in note)
+            add(carried, "the note carries %s" % dist,
+                "" if carried else "the note has drifted")
 
     # 6 - the launch kit, through its own guard
     guard = ROOT / "tools" / "check_launch.py"
