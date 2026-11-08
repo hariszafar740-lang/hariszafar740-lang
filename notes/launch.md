@@ -51,7 +51,7 @@ Title (73 chars, limit 300):
 Five power-systems packages where every README number is pinned by a test
 ```
 
-Body (1533 chars, limit 40000):
+Body (1532 chars, limit 40000):
 
 ```
 I have been building small power-systems solvers in Python and got tired of README numbers that quietly stop being true, so each package now has one headline figure that a test asserts, and a sixth repository installs all five from PyPI and re-checks them on Python 3.11 and 3.12.
@@ -109,7 +109,7 @@ https://github.com/hariszafar740-lang/hariszafar740-lang/blob/main/notes/five-pa
 
 ## 4. LinkedIn
 
-Body (1546 chars, limit 3000):
+Body (1545 chars, limit 3000):
 
 ```
 Five Python packages, one rule.

@@ -1,0 +1,43 @@
+name: Launch kit guard
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'notes/launch.md'
+      - 'tools/check_launch.py'
+      - 'tests/test_launch_kit.py'
+      - 'README.md'
+  pull_request:
+    paths:
+      - 'notes/launch.md'
+      - 'tools/check_launch.py'
+      - 'tests/test_launch_kit.py'
+      - 'README.md'
+  schedule:
+    - cron: "17 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  guard:
+    name: The kit still matches the check table
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install the test dependency
+        run: python -m pip install -r requirements-dev.txt
+      - name: Re-read the live check table and compare every number
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python tools/check_launch.py
+      - name: The kit's own offline checks
+        run: python -m pytest -q tests/test_launch_kit.py
