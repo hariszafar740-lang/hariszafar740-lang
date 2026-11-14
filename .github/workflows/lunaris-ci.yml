@@ -72,3 +72,24 @@ jobs:
         run: npm ci --prefix frontend && npm run build --prefix frontend
       - name: Run API and model checks on Python 3.14
         run: python -m pytest -q tests
+  review-command-check:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Execute command with existing original rasters
+        shell: bash
+        run: |
+          set -euo pipefail
+          python lunar-envelope/scripts/fetch_native_lola.py "$RUNNER_TEMP/lola"
+          export LUNARIS_NATIVE_DEM_DIR="$RUNNER_TEMP/lola"
+          trap 'tail -c 5000 "$RUNNER_TEMP/command.log" | base64 -w0 | xargs -I{} echo "::error title=Command failed::{}"' ERR
+          bash .github/terrain-review-command-test.sh > "$RUNNER_TEMP/command.log" 2>&1
+          tail -c 1800 "$RUNNER_TEMP/command.log" | base64 -w0 | xargs -I{} echo "::notice title=Command result::{}"
