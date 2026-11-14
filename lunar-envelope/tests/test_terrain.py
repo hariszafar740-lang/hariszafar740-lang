@@ -186,3 +186,20 @@ def test_native_downloader_verifies_before_publication(monkeypatch,tmp_path):
     monkeypatch.setattr(module,'urlopen',lambda *args,**kwargs:io.BytesIO(b'incorrect'))
     with pytest.raises(ValueError,match='mismatch'):module.main(output)
     assert list(output.iterdir())==[]
+
+
+def test_pds_source_processing_comparison_fails_closed():
+    import importlib.util
+    script=Path(__file__).parent.parent/'scripts/validate_terrain_sources.py'
+    spec=importlib.util.spec_from_file_location('validate_terrain_sources',script)
+    module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+    good={'inner':{'cells':2310400,'nonzero':0,'max_abs_m':0},
+          'ring':{'cells':2888000,'nonzero':1558,'max_abs_m':1,'other_differences':0,
+                  'exact_half_m_differences':1558,'fill_values_in_source_window':0}}
+    module.assert_processing_consistent(good)
+    for where,key,bad in [('inner','nonzero',1),('inner','cells',1),('ring','max_abs_m',2),
+                          ('ring','cells',1),('ring','other_differences',1),
+                          ('ring','exact_half_m_differences',1557),('ring','fill_values_in_source_window',1)]:
+        changed={k:dict(v) for k,v in good.items()};changed[where][key]=bad
+        with pytest.raises(ValueError,match='processing comparison failed'):
+            module.assert_processing_consistent(changed)

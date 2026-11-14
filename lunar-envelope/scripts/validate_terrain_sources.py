@@ -11,20 +11,34 @@ of the scientific suitability or accuracy of LOLA measurements.
 import hashlib,json,sys
 from pathlib import Path
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
-import numpy as np
 from backend import terrain
 
 SOURCES={'ldem_80s_80m.img':('e6591eeea35402ca5e124ca00f5bf0774381a2d4fa919144b455d82b8ff65fdc',7600),
          'ldem_75s_120m.img':('ae3afc3c75c33d43666ca06c83ca08f0b12ef03b7d36d2d791d972730794391b',7624)}
 
 def verify(path,sha,size):
+    import numpy as np
     h=hashlib.sha256()
     with path.open('rb') as f:
         for block in iter(lambda:f.read(1024*1024),b''):h.update(block)
     if path.stat().st_size!=size*size*2 or h.hexdigest()!=sha:raise ValueError(f'Source size/hash mismatch: {path}')
     return np.memmap(path,mode='r',dtype='<i2',shape=(size,size))
 
+def assert_processing_consistent(report):
+    """Reject processing discrepancies other than one-metre exact-half ties.
+
+    This is a data integrity/reproduction check, not a scientific accuracy or
+    visibility guarantee. Print the report before invoking it to aid diagnosis.
+    """
+    inner,ring=report['inner'],report['ring']
+    if (inner['cells']!=2310400 or inner['nonzero']!=0 or inner['max_abs_m']!=0
+        or ring['cells']!=2888000 or ring['max_abs_m']>1
+        or ring['other_differences']!=0 or ring['fill_values_in_source_window']!=0
+        or ring['nonzero']!=ring['exact_half_m_differences']):
+        raise ValueError('PDS source-to-derivative processing comparison failed')
+
 def main(directory):
+    import numpy as np
     rasters={name:verify(directory/name,*spec) for name,spec in SOURCES.items()}
     actual=np.asarray(terrain.load_grid()).reshape(2280,2280)
     # Plain 25-pixel integer sums, independently calculated from native DN.
@@ -53,7 +67,8 @@ def main(directory):
         nonties+=int(np.count_nonzero((delta!=0)&(values%200!=100)))
         nonzero+=len(nz); maximum=max(maximum,int(np.abs(delta).max()));total_cells+=delta.size
     report['ring']={'cells':total_cells-1520*1520,'nonzero':nonzero,'max_abs_m':maximum,'examples_row_col_delta_m_numerator':examples,'exact_half_m_differences':ties,'other_differences':nonties,'fill_values_in_source_window':fills}
-    print(json.dumps(report,sort_keys=True))
+    print(json.dumps(report,sort_keys=True),flush=True)
+    assert_processing_consistent(report)
 if __name__=='__main__':
     if len(sys.argv)!=2:raise SystemExit(__doc__)
     main(Path(sys.argv[1]))
