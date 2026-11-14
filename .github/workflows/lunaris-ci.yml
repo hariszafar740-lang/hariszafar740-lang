@@ -61,7 +61,14 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.14'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: lunar-envelope/frontend/package-lock.json
       - name: Install backend and test tools
         run: python -m pip install -r backend/requirements.lock pytest httpx
+      - name: Install and build frontend for static-file tests
+        run: npm ci --prefix frontend && npm run build --prefix frontend
       - name: Run API and model checks on Python 3.14
         run: python -m pytest -q tests
