@@ -71,3 +71,33 @@ jobs:
         run: npm ci --prefix frontend && npm run build --prefix frontend
       - name: Run API and model checks on Python 3.14
         run: python -m pytest -q tests
+
+  docker-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Build and smoke-test the container
+        run: |
+          docker build -t lunaris-smoke -f lunar-envelope/Dockerfile lunar-envelope
+          docker run -d --name lunaris-smoke -p 127.0.0.1:18000:8000 lunaris-smoke
+          trap 'docker logs lunaris-smoke; docker rm -f lunaris-smoke' EXIT
+          python - <<'PYCODE'
+          import time, urllib.request
+          base = 'http://127.0.0.1:18000'
+          for attempt in range(30):
+              try:
+                  with urllib.request.urlopen(base + '/api/health', timeout=1) as response:
+                      assert b'"ok"' in response.read()
+                  break
+              except OSError:
+                  if attempt == 29:
+                      raise
+                  time.sleep(1)
+          with urllib.request.urlopen(base + '/') as response:
+              assert b'<div id="root">' in response.read()
+          with urllib.request.urlopen(base + '/api/provenance/ephemeris') as response:
+              assert b'Lunar geometry data, provenance and validation' in response.read()
+          PYCODE
+          test "$(docker exec lunaris-smoke id -u)" = 10001
