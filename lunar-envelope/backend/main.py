@@ -107,6 +107,12 @@ def calculate(s: Scenario):
 @app.get('/api/health')
 def health(): return {'status':'ok'}
 
+@app.get('/api/provenance/ephemeris', include_in_schema=False)
+def ephemeris_provenance():
+    # Served from the installed data directory, so this remains valid offline
+    # and independently of any repository branch or deployment host.
+    return FileResponse(ephemeris.EXTENDED_PATH.parent / 'README.md', media_type='text/plain; charset=utf-8')
+
 @app.post('/api/compare-sites')
 def compare_sites(request: PlanRequest):
     try:

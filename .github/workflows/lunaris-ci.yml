@@ -1,7 +1,6 @@
 name: Lunaris prototype checks
 on:
   push:
-    branches: [main, 'arena/**']
     paths: ['lunar-envelope/**', '.github/workflows/lunaris-ci.yml']
   pull_request:
     paths: ['lunar-envelope/**', '.github/workflows/lunaris-ci.yml']

@@ -11,6 +11,12 @@ try {
   await page.goto(process.env.BASE_URL || 'http://127.0.0.1:8000/',{waitUntil:'networkidle'});
   await page.getByText('Find your window').waitFor();
   await page.getByText('LOCAL SKY GEOMETRY').waitFor();
+  const provenance=page.getByRole('link',{name:'METHOD & PROVENANCE'});
+  assert.equal(await provenance.getAttribute('href'),'/api/provenance/ephemeris');
+  const provenanceResponse=await page.request.get('/api/provenance/ephemeris');
+  assert.equal(provenanceResponse.status(),200);
+  assert.match(await provenanceResponse.text(),/Lunar geometry data, provenance and validation/);
+  assert.match(await page.locator('.nav-footer').innerText(),/HARIS ZAFAR/);
   assert.equal(await page.locator('.compare-card').count(),2);
   await page.getByRole('button',{name:'SAMPLE SITE A TERRAIN'}).click();
   await page.getByText('Sun above sampled:',{exact:false}).waitFor({timeout:30000});

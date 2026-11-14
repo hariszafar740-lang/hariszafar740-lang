@@ -1,7 +1,7 @@
 # Lunaris — lunar landing site navigator & environment lab
 
 **A NASA Space Apps Challenge concept for exploring lunar surface conditions.**
-I built Lunaris to practise turning open planetary observations and space-physics assumptions into an understandable mission-planning interface, especially for lunar solar-power and surface-operation questions. The aim is to prepare a challenge-ready project that connects science, software and practical engineering. This is a personal prototype, not an official NASA product; it does not claim that it was submitted, selected, endorsed, or awarded.
+Lunaris is a personal project by **Haris Zafar**, exploring how open planetary observations and space-physics assumptions can support an understandable interface for lunar solar-power and surface-operation questions. The aim is a challenge-ready project connecting science, software and practical engineering. This is a personal prototype, not an official NASA product; it does not claim that it was submitted, selected, endorsed, or awarded.
 
 ![Lunaris site navigator showing scenario controls, sky plot, comparison cards and timeline](docs/workspace.png)
 
@@ -21,7 +21,7 @@ There is **no public hosted demo yet**. GitHub shows the source code, not a runn
 
 ### Option A — open in GitHub Codespaces
 
-1. [Create a Lunaris Codespace on this working branch](https://codespaces.new/hariszafar740-lang/hariszafar740-lang?ref=arena/4e302a25-hariszafar740-lang). Sign in and choose the **Lunaris — lunar environment lab** configuration if prompted.
+1. While the changes are under review, open [pull request #3](https://github.com/hariszafar740-lang/hariszafar740-lang/pull/3), select **Code**, open the **Codespaces** tab, and create a codespace for the pull request. Choose the **Lunaris — lunar environment lab** configuration if prompted. After the changes are merged, create a codespace from the repository’s default branch instead.
 2. Wait for the dev container to install the Python and Node dependencies and build the frontend. The server should start automatically. Open the forwarded **Lunaris prototype** port 8000 from the Ports tab if a browser tab does not open.
 3. If startup fails, inspect `/tmp/lunaris-codespaces.log` in the Codespace terminal and run `cd lunar-envelope && HOST=0.0.0.0 ./run.sh`. Stop or delete the Codespace afterward to avoid unnecessary usage.
 
@@ -29,11 +29,13 @@ This Codespaces configuration is supplied but has **not been tested on GitHub in
 
 ### Option B — Docker (Windows, macOS, or Linux)
 
-Install Git and Docker Desktop (or Docker Engine), then run these commands in a terminal. The browser app and Python API run together; no local Node or Python install is needed:
+Install Git and Docker Desktop (or Docker Engine), then run these commands in a terminal. They check out the pull request in detached-HEAD mode while it is under review. After it is merged, omit the `git fetch` and `git checkout` lines to use the default branch. The browser app and Python API run together; no local Node or Python install is needed:
 
 ```bash
-git clone --branch arena/4e302a25-hariszafar740-lang --single-branch https://github.com/hariszafar740-lang/hariszafar740-lang.git
+git clone https://github.com/hariszafar740-lang/hariszafar740-lang.git
 cd hariszafar740-lang
+git fetch origin refs/pull/3/head
+git checkout --detach FETCH_HEAD
 docker build -t lunaris ./lunar-envelope
 docker run --rm -p 127.0.0.1:8000:8000 lunaris
 ```
@@ -42,11 +44,14 @@ Open [http://127.0.0.1:8000](http://127.0.0.1:8000). Stop with Ctrl+C. Docker bu
 
 ### Option C — native installation (Linux, macOS, Windows)
 
-Requires Git, Python **3.11+**, Node.js **20+** and npm. From a fresh checkout:
+Requires Git, Python **3.11+**, Node.js **20+** and npm. From a fresh checkout, these commands select the pull request in detached-HEAD mode; after it is merged, omit the `git fetch` and `git checkout` lines to use the default branch:
 
 ```bash
-git clone --branch arena/4e302a25-hariszafar740-lang --single-branch https://github.com/hariszafar740-lang/hariszafar740-lang.git
-cd hariszafar740-lang/lunar-envelope
+git clone https://github.com/hariszafar740-lang/hariszafar740-lang.git
+cd hariszafar740-lang
+git fetch origin refs/pull/3/head
+git checkout --detach FETCH_HEAD
+cd lunar-envelope
 ```
 
 On **Linux or macOS** (a POSIX shell):

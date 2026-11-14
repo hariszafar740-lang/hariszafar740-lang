@@ -152,3 +152,11 @@ def test_comparison_uses_observed_location_and_local_time():
     expected=snapshot(Scenario(latitude=obs['latitude'],longitude=obs['longitude'],phase=phase))
     assert out['matched_phase_day']==pytest.approx(phase,abs=.001)
     assert out['model_temperature_k']==expected['temperature']
+
+
+def test_ephemeris_provenance_is_served_locally():
+    response=client.get('/api/provenance/ephemeris')
+    assert response.status_code==200
+    assert response.headers['content-type'].startswith('text/plain')
+    assert 'Lunar geometry data, provenance and validation' in response.text
+    assert 'MOON_ME_DE421' in response.text

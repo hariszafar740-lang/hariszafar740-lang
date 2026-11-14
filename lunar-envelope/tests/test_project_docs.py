@@ -28,3 +28,16 @@ def test_audit_preserves_scientific_boundaries():
     assert 'not safe EVA windows' in audit
     assert 'LADEE LDEX' in audit
     assert 'No one can honestly guarantee a top-0.1%' in audit
+
+
+def test_project_identity_and_review_access_are_branch_neutral():
+    readme=(PROJECT/'README.md').read_text(encoding='utf-8')
+    planner=(PROJECT/'frontend/src/Planner.tsx').read_text(encoding='utf-8')
+    workflow=(REPO/'.github/workflows/lunaris-ci.yml').read_text(encoding='utf-8')
+    assert 'personal project by **Haris Zafar**' in readme
+    assert 'git fetch origin refs/pull/3/head' in readme
+    assert 'git checkout --detach FETCH_HEAD' in readme
+    assert '/api/provenance/ephemeris' in planner
+    assert 'HARIS ZAFAR' in planner
+    # The push workflow remains enabled for all branches via its paths filter.
+    assert 'branches:' not in workflow.split('  pull_request:',1)[0]
