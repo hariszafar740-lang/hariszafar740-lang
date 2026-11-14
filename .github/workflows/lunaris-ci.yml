@@ -1,0 +1,50 @@
+name: Lunaris prototype checks
+on:
+  push:
+    branches: [main, 'arena/**']
+    paths: ['lunar-envelope/**', '.github/workflows/lunaris-ci.yml']
+  pull_request:
+    paths: ['lunar-envelope/**', '.github/workflows/lunaris-ci.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: lunar-envelope
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: lunar-envelope/frontend/package-lock.json
+      - name: Install backend and test tools
+        run: python -m pip install -r backend/requirements.lock pytest httpx
+      - name: Install and build frontend
+        run: npm ci --prefix frontend && npm run build --prefix frontend
+      - name: Run API and model checks
+        run: python -m pytest -q tests
+      - name: Start application for browser checks
+        run: |
+          python -m uvicorn backend.main:app --host 127.0.0.1 --port 8000 > "$RUNNER_TEMP/lunaris.log" 2>&1 &
+          python - <<'PYCODE'
+          import time, urllib.request
+          for attempt in range(30):
+              try:
+                  urllib.request.urlopen("http://127.0.0.1:8000/api/health", timeout=1)
+                  break
+              except OSError:
+                  if attempt == 29:
+                      raise
+                  time.sleep(1)
+          PYCODE
+      - name: Browser smoke checks
+        run: CHROMIUM_PATH=/usr/bin/google-chrome npm run test:e2e --prefix frontend

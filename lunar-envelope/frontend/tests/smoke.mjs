@@ -15,6 +15,10 @@ try {
   await page.getByRole('button',{name:'NEXT STEP'}).click();
   await page.getByText('Explore lunar conditions').waitFor();
   await page.getByRole('button',{name:'Close guided tour'}).click();
+  const latitude = page.getByRole('spinbutton',{name:'LATITUDE in degrees, press Enter to apply'});
+  await latitude.fill('-87.5');
+  await latitude.press('Enter');
+  await page.getByText('87.5° S', { exact: false }).first().waitFor();
   await page.getByRole('button',{name:'GO TO SAMPLE SITE'}).click();
   await page.getByText('MODEL AT APPROX. SAME LOCAL TIME').waitFor();
   assert.match(await page.locator('.observation-value').innerText(), /80\.4/);

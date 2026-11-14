@@ -1,11 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 cd "$(dirname "$0")"
-command -v python3 >/dev/null || { echo 'Python 3 is required.' >&2; exit 1; }
-command -v npm >/dev/null || { echo 'Node.js and npm are required.' >&2; exit 1; }
-python3 -m venv .venv
-.venv/bin/python -m pip install -r backend/requirements.txt
-(cd frontend && npm ci && npm run build)
+./scripts/setup.sh
 port=${PORT:-8000}
+host=${HOST:-127.0.0.1}
 echo "Open http://127.0.0.1:${port} (Ctrl+C to stop)"
-exec .venv/bin/python -m uvicorn backend.main:app --host 0.0.0.0 --port "$port"
+exec .venv/bin/python -m uvicorn backend.main:app --host "$host" --port "$port"

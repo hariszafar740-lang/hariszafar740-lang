@@ -1,18 +1,77 @@
 # Lunaris — lunar environment lab
 
-An exploratory mission-control prototype: interactive 3D Moon, selectable site, environmental sliders and hypothetical stress tests, a Python simulation API, and a CSV report. It is not a flight-qualified model, a forecast, or a basis for EVA decisions.
+**A NASA Space Apps Challenge concept for exploring lunar surface conditions.**
+I built Lunaris to practise turning open planetary observations and space-physics assumptions into an understandable mission-planning interface, especially for lunar solar-power and surface-operation questions. The aim is to prepare a challenge-ready project that connects science, software and practical engineering. This is a personal prototype, not an official NASA product; it does not claim that it was submitted, selected, endorsed, or awarded.
 
-## Run on Kali Linux
+![Lunaris mission-control interface showing the lunar globe, scenario controls and inspector](docs/workspace.png)
 
-Install Python 3, Python's venv module, Node.js (20 or newer) and npm first. From this folder:
+**Important:** Models are illustrative and unvalidated. The historical Diviner subset is not live telemetry. Do not use any output for mission, equipment or EVA decisions. [Read the complete self-audit and roadmap](AUDIT.md).
+
+## Try the prototype
+
+There is **no public hosted demo yet**. GitHub shows the source code, not a running backend. The fastest no-install option for a reviewer with a GitHub account is Codespaces; it may require an available usage quota or payment.
+
+### Option A — open in GitHub Codespaces
+
+1. [Create a Lunaris Codespace on this working branch](https://codespaces.new/hariszafar740-lang/hariszafar740-lang?ref=arena/4e302a25-hariszafar740-lang). Sign in and choose the **Lunaris — lunar environment lab** configuration if prompted.
+2. Wait for the dev container to install the Python and Node dependencies and build the frontend. The server should start automatically. Open the forwarded **Lunaris prototype** port 8000 from the Ports tab if a browser tab does not open.
+3. If startup fails, inspect `/tmp/lunaris-codespaces.log` in the Codespace terminal and run `cd lunar-envelope && HOST=0.0.0.0 ./run.sh`. Stop or delete the Codespace afterward to avoid unnecessary usage.
+
+This Codespaces configuration is supplied but has **not been tested on GitHub infrastructure** in this environment. Its forwarded link is normally private to the Codespace user and is not a substitute for a public demo.
+
+### Option B — Docker (Windows, macOS, or Linux)
+
+Install Git and Docker Desktop (or Docker Engine), then run these commands in a terminal. The browser app and Python API run together; no local Node or Python install is needed:
+
+```bash
+git clone --branch arena/4e302a25-hariszafar740-lang --single-branch https://github.com/hariszafar740-lang/hariszafar740-lang.git
+cd hariszafar740-lang
+docker build -t lunaris ./lunar-envelope
+docker run --rm -p 127.0.0.1:8000:8000 lunaris
+```
+
+Open [http://127.0.0.1:8000](http://127.0.0.1:8000). Stop with Ctrl+C. Docker builds need access to Docker Hub, PyPI and npm. The recipe has **not been built or tested here** because Docker is unavailable in this workspace.
+
+### Option C — native installation (Linux, macOS, Windows)
+
+Requires Git, Python **3.11+**, Node.js **20+** and npm. From a fresh checkout:
+
+```bash
+git clone --branch arena/4e302a25-hariszafar740-lang --single-branch https://github.com/hariszafar740-lang/hariszafar740-lang.git
+cd hariszafar740-lang/lunar-envelope
+```
+
+On **Linux or macOS** (a POSIX shell):
 
 ```bash
 ./run.sh
 ```
 
-Open http://127.0.0.1:8000. The script installs backend packages in `.venv`, installs the locked frontend dependencies, builds the frontend, and starts the single FastAPI server. Stop with Ctrl+C. Set `PORT=...` to choose a different port. The server binds all network interfaces, so use a firewall or change `--host` in `run.sh` if access should be local only. The build needs network access to PyPI and npm. Fonts have local fallbacks if Google Fonts is unreachable.
+On **Windows PowerShell**, from the `lunar-envelope` directory:
 
-For development: start `python -m uvicorn backend.main:app --reload --host 0.0.0.0 --port 8000` from this folder using the venv; run `npm run dev` from `frontend` in a second terminal. Vite proxies `/api` to the backend. Run tests with `.venv/bin/pip install pytest httpx && .venv/bin/python -m pytest tests`; run `npm run build` in `frontend`. For browser smoke tests, start the application and run `CHROMIUM_PATH=/path/to/chromium npm run test:e2e` from `frontend`.
+```powershell
+py -3.11 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install --upgrade "pip>=26.2" "setuptools>=84.1.0"
+.\.venv\Scripts\python.exe -m pip install -r backend/requirements.lock
+Push-Location frontend
+npm.cmd ci
+npm.cmd run build
+Pop-Location
+.\.venv\Scripts\python.exe -m uvicorn backend.main:app --host 127.0.0.1 --port 8000
+```
+
+Windows users can replace `py -3.11` with another installed Python 3.11+ executable. Open [http://127.0.0.1:8000](http://127.0.0.1:8000) and stop with Ctrl+C. The Linux shell path was tested; macOS and Windows instructions have **not** been executed here. On Linux, Python's venv package may need separate installation. First-time installs require PyPI and npm access. The default binds to localhost only; set `HOST=0.0.0.0 PORT=8001 ./run.sh` when network exposure is intentional. Use a firewall and never treat this development server as production hosting.
+
+### A 90-second walkthrough
+
+1. Open **GUIDED TOUR**, then select a point or enter coordinates. The globe texture is procedural, not a lunar map.
+2. Change lunar phase or run a hypothetical stress test; inspect the model output and the 30-day screening strip.
+3. In **Diviner archive**, select **GO TO SAMPLE SITE** to see a historical observation next to an approximate-local-time model estimate. It is not a validation.
+4. Download a **CSV** or **PDF** report. Candidate intervals are screening indicators, **not safe EVA windows**.
+
+## Development and tests
+
+With dependencies installed, start the backend from this directory using `.venv/bin/python -m uvicorn backend.main:app --host 127.0.0.1 --port 8000`, and run `npm run dev` from `frontend` in another terminal. Vite proxies `/api` to the backend. Backend tests: `.venv/bin/pip install pytest httpx && .venv/bin/python -m pytest -q tests`; frontend: `npm run build` from `frontend`. With the app running and Chromium installed, run `CHROMIUM_PATH=/path/to/chromium npm run test:e2e` from `frontend`. Automated CI configuration is included but has not been verified on GitHub until its workflow runs.
 
 ## What the model does
 
@@ -24,7 +83,7 @@ Dust concentration and deposition are empirical proxies for meteoroid flux and p
 
 The project includes a **small historical LRO Diviner subset**: 551 binned brightness-temperature observations and the original PDS4 label, retrieved from a pinned GitHub mirror. The API validates the source-file checksums and schema and returns the nearest bin only within 2 km. Choose **GO TO SAMPLE SITE** to see one in the inspector and report. The sample is spatially sparse and records historical observing conditions; it is not a live feed, a global map, or a time-matched validation of the simulation. The model's temperature remains an independent grey-body proxy; no observation is used to calibrate it. NASA PDS could not be reached directly, so the mirror's claimed extraction has not been independently checked against the full NASA table. Product links, hashes, attribution, selection limitations, and provenance are in [data/diviner/README.md](data/diviner/README.md).
 
-An optional generic utility accepts a *previously normalized* CSV with columns `timestamp,quantity,value,unit,source_url`: `.venv/bin/python backend/ingest.py /path/to/normalized.csv`. It checks basic formatting and a NASA/PDS-related URL domain; it is not a PDS parser and cannot verify provenance. Its output is not used by the Diviner endpoint or simulation. Full product ingestion, LADEE observations, broad Diviner coverage, and scientific calibration remain future work.
+The runtime Python versions are listed in `backend/requirements.lock`; the lock has platform markers and is not hash-locked. An optional generic utility accepts a *previously normalized* CSV with columns `timestamp,quantity,value,unit,source_url`: `.venv/bin/python backend/ingest.py /path/to/normalized.csv`. It checks basic formatting and a NASA/PDS-related URL domain; it is not a PDS parser and cannot verify provenance. Its output is not used by the Diviner endpoint or simulation. Full product ingestion, LADEE observations, broad Diviner coverage, and scientific calibration remain future work.
 
 Physical context: [NASA Moon fact sheet](https://nssdc.gsfc.nasa.gov/planetary/factsheet/moonfact.html); [NASA LADEE mission](https://science.nasa.gov/mission/ladee/). Further model validation and independent scientific review are required.
 
