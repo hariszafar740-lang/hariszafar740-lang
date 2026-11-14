@@ -12,6 +12,16 @@ try {
   await page.getByText('Find your window').waitFor();
   await page.getByText('LOCAL SKY GEOMETRY').waitFor();
   assert.equal(await page.locator('.compare-card').count(),2);
+  await page.getByRole('button',{name:'SAMPLE SITE A TERRAIN'}).click();
+  await page.getByText('Sun above sampled:',{exact:false}).waitFor({timeout:30000});
+  assert.match(await page.locator('.terrain-result').innerText(),/not confirmed visibility/);
+  const [terrainJson]=await Promise.all([page.waitForEvent('download'),page.getByRole('button',{name:'DOWNLOAD TERRAIN JSON'}).click()]);
+  const terrainData=JSON.parse(await (await import('node:fs/promises')).readFile(await terrainJson.path(),'utf8'));
+  assert.equal(terrainData.horizon_deg.length,360);
+  assert.equal(terrainData.observer_height_m,2);
+  assert.equal(terrainData.max_distance_km,300);
+  await page.getByRole('spinbutton',{name:'Observer height above terrain in meters'}).fill('10');
+  await page.getByText('Terrain inputs changed.',{exact:false}).waitFor();
   await page.getByRole('button',{name:'PIN CURRENT AS BASELINE'}).click();
   await page.getByText('BASELINE', {exact:true}).waitFor();
   await page.getByRole('slider',{name:'Sky time'}).fill('2');
@@ -19,7 +29,7 @@ try {
   await page.getByRole('button',{name:'Site B',exact:true}).click();
   assert.match(await page.locator('.plot-note').innerText(),/SITE B/);
   await page.getByRole('spinbutton',{name:'Duration in days'}).fill('3');
-  await page.getByText('Inputs changed.',{exact:false}).waitFor();
+  await page.getByText('Inputs changed. Displayed results',{exact:false}).waitFor();
   await page.getByLabel('Bin size in minutes').selectOption('15');
   await page.getByRole('spinbutton',{name:'Sun clearance in degrees'}).fill('1');
   await page.getByRole('button',{name:'+ ADD THIRD SITE'}).click();
@@ -28,7 +38,7 @@ try {
   assert.match(await page.locator('.nav-section-heading .nav-label').innerText(),/7 DAYS/);
   await page.getByRole('button',{name:'COMPARE SCENARIOS'}).click();
   await page.getByText('MISSION WINDOW / 3 DAYS').waitFor();
-  assert.equal(await page.locator('.draft-notice').count(),0);
+  assert.equal(await page.locator('.nav-main > .draft-notice').count(),0);
   await page.getByText('REFINED GEOMETRIC TRANSITIONS').click();
   await page.getByText('15-minute sign scan',{exact:false}).waitFor();
   await page.getByLabel('Start date and time UTC').fill('2028-01-01T00:00');
@@ -83,6 +93,9 @@ try {
   await page.getByText('Find your window').waitFor();
   await page.getByText('LOCAL SKY GEOMETRY').waitFor();
   assert.equal(await page.locator('.compare-card').count(),2);
+  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
+  await page.getByRole('button',{name:'SAMPLE SITE A TERRAIN'}).click();
+  await page.getByText('Sun above sampled:',{exact:false}).waitFor({timeout:30000});
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
   await page.getByRole('button',{name:'EXOSPHERE LAB'}).click();
   await page.getByRole('button',{name:'Toggle controls'}).click();

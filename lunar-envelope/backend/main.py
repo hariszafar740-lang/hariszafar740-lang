@@ -6,13 +6,15 @@ import io
 import math
 from pathlib import Path
 from fastapi import FastAPI, Query, HTTPException
-from . import diviner, ephemeris, donki
+from . import diviner, ephemeris, donki, terrain
 from .planner import PlanRequest, compare
 from fastapi.responses import StreamingResponse, FileResponse
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict, field_validator
+from datetime import datetime, timezone
+from typing import Literal
 
 app = FastAPI(title='Lunar Envelope API', version='0.2.0')
 
@@ -116,6 +118,28 @@ def compare_sites(request: PlanRequest):
     except OSError as exc:
         raise HTTPException(status_code=503, detail='Ephemeris dataset unavailable') from exc
 
+class TerrainRequest(BaseModel):
+    model_config=ConfigDict(extra='forbid',allow_inf_nan=False)
+    start: datetime
+    days: int=Field(default=7,ge=1,le=14)
+    step_minutes: Literal[15,30,60]=60
+    latitude: float=Field(ge=-90,le=-80)
+    longitude: float=Field(ge=-180,le=180)
+    observer_height_m: float=Field(default=2,ge=0,le=1000)
+    @field_validator('start')
+    @classmethod
+    def utc_time(cls,value):
+        if value.tzinfo is None or value.utcoffset() is None: raise ValueError('Timezone is required')
+        value=value.astimezone(timezone.utc)
+        if not ephemeris.EXTENDED_START<=value<ephemeris.EXTENDED_END:raise ValueError('Start outside ephemeris coverage')
+        return value
+
+@app.post('/api/terrain-screen')
+def terrain_screen(request:TerrainRequest):
+    try:return terrain.screen(request)
+    except (terrain.TerrainUnavailable,ephemeris.DataUnavailable) as exc:raise HTTPException(status_code=503,detail=str(exc)) from exc
+    except ValueError as exc:raise HTTPException(status_code=422,detail=str(exc)) from exc
+
 @app.get('/api/space-weather')
 def space_weather(days:int = Query(default=7,ge=1,le=30)):
     return donki.recent(days)
@@ -133,10 +157,14 @@ def data_catalog():
         n=len(diviner.observations()); diviner_status='available'
     except (ValueError, OSError):
         n=0;diviner_status='unavailable'
+    try:
+        terrain.load_grid(); terrain_status='available'
+    except terrain.TerrainUnavailable:
+        terrain_status='unavailable'
     return {'datasets':[
         {'name':'JPL DE421 derived vectors','status':ephem_status,'kind':'calculated historical/predictive ephemeris, not live', 'count':count,'coverage':ephem_coverage,'source':'https://naif.jpl.nasa.gov/naif/data.html'},
         {'name':'LRO Diviner subset','status':diviner_status,'kind':'historical observations','count':n,'coverage':'sparse south-polar subset','source':diviner.SOURCE_URL},
-        {'name':'LRO LOLA terrain','status':'unavailable','kind':'historical topography','coverage':'not installed','source':'https://pgda.gsfc.nasa.gov/products/81'},
+        {'name':'LRO LOLA terrain','status':terrain_status,'kind':'third-party 400 m derived historical topography, not independently verified','coverage':'south polar square; screening sites 80–90° S','source':'https://pds.nasa.gov/ds-view/pds/viewProfile.jsp?dsid=LRO-L-LOLA-4-GDR-V1.0'},
         {'name':'LADEE LDEX / NMS / UVS','status':'unavailable','kind':'historical observations','coverage':'not installed','source':'https://sbn.psi.edu/pds/resource/ldex.html'},
         {'name':'NASA DONKI','status':'enabled_unchecked' if os.environ.get('LUNARIS_DONKI_ENABLED') == '1' else 'disabled','kind':'near-real-time event catalogue','coverage':'on-demand; check connection','source':'https://ccmc.gsfc.nasa.gov/tools/DONKI/'}]}
 

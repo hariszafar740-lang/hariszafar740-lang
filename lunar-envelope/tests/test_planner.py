@@ -64,7 +64,7 @@ def test_catalog_and_no_fabricated_weather(monkeypatch):
     monkeypatch.delenv('LUNARIS_DONKI_ENABLED',raising=False)
     catalog=client.get('/api/data-catalog').json()['datasets']
     assert next(d for d in catalog if d['name']=='JPL DE421 derived vectors')['status']=='available'
-    assert next(d for d in catalog if d['name']=='LRO LOLA terrain')['status']=='unavailable'
+    assert next(d for d in catalog if d['name']=='LRO LOLA terrain')['status']=='available'
     weather=client.get('/api/space-weather').json()
     assert weather['status']=='disabled' and weather['events']==[]
     assert client.get('/api/space-weather?days=31').status_code==422

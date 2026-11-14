@@ -1,0 +1,105 @@
+{
+ "projection": "south polar stereographic, sphere R=1737.4 km, lon 0 up, 90E right (LOLA/PDS)",
+ "halfWidthM": 304000.0,
+ "hillshade": {
+  "file": "map/hillshade.webp",
+  "pxM": 320.0,
+  "source": "LOLA LDEM_80S_80M (block-mean to 320 m)",
+  "lightAzimuthDeg": 315.0,
+  "lightAzimuthFrom": "clockwise from image up (the lon 0 direction)",
+  "lightAltitudeDeg": 35.0,
+  "verticalExaggeration": 2.0,
+  "tint": {
+   "formula": "grey = clip(base + shade * hillshade + elevation * clip(zNorm, 0, 1), 0, 1); zNorm maps the given percentiles of the 320 m heights to 0..1",
+   "base": 0.18,
+   "shade": 0.62,
+   "elevation": 0.2,
+   "percentiles": [
+    1,
+    99
+   ],
+   "zLowM": -5358.469,
+   "zHighM": 4317.157
+  },
+  "note": "Display shading only (artificial light direction); not a Sun position."
+ },
+ "dem": {
+  "file": "map/dem_400m.bin.gz",
+  "size": 2280,
+  "pxM": 400.0,
+  "halfWidthM": 456000.0,
+  "dtype": "int16-le",
+  "encoding": "planar-split: r = z - (left + up - upleft) with zero padding, int16 LE; stored as all low bytes then all high bytes; gzip. Decode: un-split, then z = r + left + up - upleft row-major.",
+  "unit": "m above 1737.4 km",
+  "source": "LOLA LDEM_80S_80M (80-90 S) + LDEM_75S_120M ring (to about 75 S), 400 m (custom-site horizons, light & shadow map)",
+  "inner": {
+   "offsetPx": 380,
+   "size": 1520,
+   "halfWidthM": 304000.0,
+   "source": "LOLA LDEM_80S_80M",
+   "method": "5 x 5 block mean of the 80 m grid, rounded to 1 m"
+  },
+  "ring": {
+   "source": "LOLA LDEM_75S_120M",
+   "method": "exact-overlap area mean of the 120 m pixels on each 400 m cell (separable 1-D overlaps; per 1.2 km: weights 1,1,1,1/3 | 2/3,1,1,2/3 | 1/3,1,1,1 of 10/3 px), rounded to 1 m",
+   "edgeLatDeg": -75.054,
+   "note": "outside the inner block only; corners reach about 69 S (real LOLA heights, no fill)"
+  },
+  "seam": {
+   "bandPx": 5,
+   "n": 30300,
+   "meanM": 0.026,
+   "sdM": 0.95,
+   "p99AbsM": 2.97,
+   "maxAbsM": 18.48,
+   "edge": {
+    "n": 6076,
+    "meanM": 0.086,
+    "sdM": 1.123,
+    "p99AbsM": 3.63,
+    "maxAbsM": 18.48
+   },
+   "what": "120 m-derived minus 80 m-derived 400 m heights over the inner block's outer 5 px (and its edge pixels alone), i.e. just inside 80 S"
+  }
+ },
+ "sunvis": {
+  "file": "map/sunvis.webp",
+  "pxM": 480.0,
+  "source": "LOLA AVGVISIB_75S_120M_201608 (Mazarico et al. 2011 method)"
+ },
+ "earthvis": {
+  "file": "map/earthvis.webp",
+  "pxM": 480.0,
+  "source": "LOLA AVGVISIB_75S_120M_201608_EARTH"
+ },
+ "psr": {
+  "file": "map/psr.webp",
+  "pxM": 480.0,
+  "source": "AVGVISIB == 0 (never sunlit over the averaging period)"
+ },
+ "outer": {
+  "halfWidthM": 456000.0,
+  "blankHalfWidthM": 300000.0,
+  "hillshade": {
+   "file": "map/hillshade_outer.webp",
+   "pxM": 480.0,
+   "source": "LOLA LDEM_75S_120M (block-mean to 480 m); lighting and tint as hillshade, zNorm from hillshade.tint zLowM / zHighM"
+  },
+  "sunvis": {
+   "file": "map/sunvis_outer.webp",
+   "pxM": 960.0,
+   "source": "LOLA AVGVISIB_75S_120M_201608 (block-mean to 960 m)"
+  },
+  "earthvis": {
+   "file": "map/earthvis_outer.webp",
+   "pxM": 960.0,
+   "source": "LOLA AVGVISIB_75S_120M_201608_EARTH (block-mean to 960 m)"
+  },
+  "psr": {
+   "file": "map/psr_outer.webp",
+   "pxM": 960.0,
+   "source": "AVGVISIB == 0 (never sunlit over the averaging period), fraction per 960 m cell"
+  },
+  "note": "The layers out to 75 S around the base map, coarser on purpose (memory): the whole +-halfWidthM square, transparent on pixels wholly inside +-blankHalfWidthM, where the layers above cover the map. Same colour, alpha and tint mappings as those layers."
+ }
+}

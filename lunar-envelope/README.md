@@ -13,7 +13,7 @@ I built Lunaris to practise turning open planetary observations and space-physic
 
 The optional server-side DONKI CME query is disabled by default. Set `LUNARIS_DONKI_ENABLED=1` before starting the server to enable an on-demand external request; cached responses include their actual fetch time and may be up to ten minutes old. NASA DONKI events are research context, not a lunar radiation or mission safety forecast. Network failure returns unavailable, not simulated data. Without network access the bundled geometry and Diviner sample still work once dependencies have been installed.
 
-No LOLA terrain, topographic horizons, complete Diviner coverage, LADEE observations, live Horizons ingest, full pipeline, global uncertainty analysis, expert validation or public deployment is present. See [ephemeris provenance and geometry limits](data/ephemeris/README.md) and [self-audit](AUDIT.md). This is a screening prototype, not flight-qualified, and is not an EVA or communication guarantee.
+The separate optional terrain screen uses a coarse third-party LOLA-derived south-polar raster, but does not establish actual horizons or verified visibility. Complete Diviner coverage, LADEE observations, live Horizons ingest, full pipeline, global uncertainty analysis, expert validation and public deployment are absent. See [ephemeris provenance and geometry limits](data/ephemeris/README.md) and [self-audit](AUDIT.md). This is a screening prototype, not flight-qualified, and is not an EVA or communication guarantee.
 
 ## Try the prototype
 
@@ -95,11 +95,15 @@ The runtime Python versions are listed in `backend/requirements.lock`; the lock 
 
 Physical context: [NASA Moon fact sheet](https://nssdc.gsfc.nasa.gov/planetary/factsheet/moonfact.html); [NASA LADEE mission](https://science.nasa.gov/mission/ladee/). Further model validation and independent scientific review are required.
 
+## Terrain roadmap Step 2 — partial implementation
+
+A separate optional terrain panel screens one selected site at 80–90°S using a checksum-gated 400 m third-party LOLA-derived raster. It calculates a sampled, curvature-aware azimuth horizon and plots midpoint Sun/Earth-above-sampled timelines. This does **not** change the original spherical comparison or use its fixed clearances. Missing near and far terrain, coarse averaging, uncertainty and interpolation can change results: above-sampled is not proven clear. Data provenance, methods, independent-code cross-checks and large observed differences are in [terrain documentation](data/terrain/README.md). **Step 2 is not complete** against the requested independently audited 10/10 standard; no independent expert audit was obtained. Neither scientific validity nor winning a competition can be guaranteed.
+
 ## Phase 2 features and gaps
 
 Phase 2 is **not complete**. The navigator now has a sky-time scrubber, three sites, fixed clearance thresholds, configurable midpoint resolution, a +2° sensitivity comparison, pinned date/assumption baseline, coordinate-matched trade table, reproducible JSON export and browser print/PDF. The thresholds are abstract angles, not terrain horizons, and the sensitivity test is not an uncertainty interval. The horizontal-panel geometry fraction uses an unobstructed 0° horizon independently of the clearance thresholds. Baselines remain in browser memory only; JSON contains both snapshots and their inputs, frame, model version, dataset hash and limitations. Differences between different durations, coordinates or assumptions do not establish a winning site. [Demo outline and references](docs/DEMO.md) are ready to adapt, not a completed challenge submission.
 
-The legacy lab's Guided Story Mode and Diviner comparison remain available; its physics is illustrative, not a validated NASA-data model. Scientific expert review, true LOLA/terrain ingestion, validated system and power constraints, a public demonstration, user testing and a completed official submission remain absent. No one can guarantee a win or honestly award an independent 10/10 without an actual independent reviewer. See [AUDIT.md](AUDIT.md).
+The legacy lab's Guided Story Mode and Diviner comparison remain available; its physics is illustrative, not a validated NASA-data model. Scientific expert review, verified original LOLA/terrain ingestion, validated system and power constraints, a public demonstration, user testing and a completed official submission remain absent. No one can guarantee a win or honestly award an independent 10/10 without an actual independent reviewer. See [AUDIT.md](AUDIT.md).
 
 The product-specific ingestion tool can extract a bounded selection from the bundled sample or the original full, checksum-matched product (see the pinned URLs in `data/diviner/README.md`):
 
@@ -116,6 +120,7 @@ It writes a separate provenance JSON and refuses an existing output; use `--mode
 ## API
 
 - `POST /api/compare-sites` — geometric site comparison; accepts timezone-aware `start`, `days` (1–14), 1–3 named sites with latitude/longitude and optional observer `height_m` (0–1000 m above the reference sphere), optional `step_minutes` (15, 30 or 60), and optional `sun_clearance_deg` / `earth_clearance_deg` (0–10). Full interval must fit 2020-01-01 through 2031-01-01 UTC; if the extended dataset is unavailable, only its 2026 fallback interval is usable. The height model uses a local tangent-plane threshold and does not model horizon dip.
+- `POST /api/terrain-screen` — optional coarse south-polar sampled-horizon screening for one site and date range; observer height is above interpolated terrain. See [terrain limitations](data/terrain/README.md).
 - `GET /api/data-catalog` — available, disabled or unavailable data sources.
 - `GET /api/space-weather?days=7` — optional DONKI CME event context; disabled unless enabled on the server.
 - `GET /api/health` — readiness
