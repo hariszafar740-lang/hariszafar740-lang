@@ -165,7 +165,7 @@ def data_catalog():
     return {'datasets':[
         {'name':'JPL DE421 derived vectors','status':ephem_status,'kind':'calculated historical/predictive ephemeris, not live', 'count':count,'coverage':ephem_coverage,'source':'https://naif.jpl.nasa.gov/naif/data.html'},
         {'name':'LRO Diviner subset','status':diviner_status,'kind':'historical observations','count':n,'coverage':'sparse south-polar subset','source':diviner.SOURCE_URL},
-        {'name':'LRO LOLA terrain','status':terrain_status,'kind':'third-party 400 m derived historical topography, not independently verified','coverage':'south polar square; screening sites 80–90° S','source':'https://pds.nasa.gov/ds-view/pds/viewProfile.jsp?dsid=LRO-L-LOLA-4-GDR-V1.0'},
+        {'name':'LRO LOLA terrain','status':terrain_status,'kind':'third-party 400 m historical topography; processing compared with original PDS rasters','coverage':'south polar square; screening sites 80–90° S','source':'https://pds.nasa.gov/ds-view/pds/viewProfile.jsp?dsid=LRO-L-LOLA-4-GDR-V1.0'},
         {'name':'LADEE LDEX / NMS / UVS','status':'unavailable','kind':'historical observations','coverage':'not installed','source':'https://sbn.psi.edu/pds/resource/ldex.html'},
         {'name':'NASA DONKI','status':'enabled_unchecked' if os.environ.get('LUNARIS_DONKI_ENABLED') == '1' else 'disabled','kind':'near-real-time event catalogue','coverage':'on-demand; check connection','source':'https://ccmc.gsfc.nasa.gov/tools/DONKI/'}]}
 

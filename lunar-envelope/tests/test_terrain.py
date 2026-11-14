@@ -153,3 +153,36 @@ def test_native_mode_api_metadata_with_synthetic_raster(monkeypatch):
     assert d['terrain_resolution']=='native' and d['radial_step_m']==40 and d['terrain_sha256'] is None
     assert d['terrain_source_sha256']=={name:spec[0] for name,spec in native_terrain.SOURCES.items()}
     assert '80/120 m' in d['assumptions']['height'] and d['sun_above_sampled_hours']==24
+
+
+def test_synthetic_ring_obstacle_reports_peak_distance(monkeypatch):
+    # On a flat sphere a concentric elevated ring at 1 km dominates each ray.
+    terrain.horizon.cache_clear()
+    monkeypatch.setattr(terrain,'MAX_DISTANCE_M',2000)
+    monkeypatch.setattr(terrain,'load_grid',lambda:None)
+    monkeypatch.setattr(terrain,'sample_xy',lambda grid,x,y: 100 if 980<math.hypot(x,y)<1020 else 0)
+    ground,profile,coverage,peak=terrain.horizon(-90,0,0)
+    assert ground==0 and all(p==1 for p in peak) and all(c==2 for c in coverage)
+    expected=terrain.elevation_angle(terrain.R,terrain.R+100,1000/terrain.R)
+    assert all(v==pytest.approx(expected,abs=1e-9) for v in profile)
+    terrain.horizon.cache_clear()
+
+
+def test_native_downloader_verifies_before_publication(monkeypatch,tmp_path):
+    import hashlib,importlib.util,io
+    script=Path(__file__).parent.parent/'scripts/fetch_native_lola.py'
+    spec=importlib.util.spec_from_file_location('fetch_native_lola',script)
+    module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+    body=b'abcdefgh';sha=hashlib.sha256(body).hexdigest()
+    monkeypatch.setattr(module,'SOURCES',{'one.img':(sha,2,100)})
+    monkeypatch.setattr(module,'urlopen',lambda *args,**kwargs:io.BytesIO(body))
+    output=tmp_path/'rasters';module.main(output)
+    assert (output/'one.img').read_bytes()==body
+    monkeypatch.setattr(module,'urlopen',lambda *args,**kwargs:pytest.fail('should use verified existing file'))
+    module.main(output)
+    (output/'one.img').write_bytes(b'bad')
+    with pytest.raises(ValueError,match='refusing overwrite'):module.main(output)
+    (output/'one.img').unlink()
+    monkeypatch.setattr(module,'urlopen',lambda *args,**kwargs:io.BytesIO(b'incorrect'))
+    with pytest.raises(ValueError,match='mismatch'):module.main(output)
+    assert list(output.iterdir())==[]

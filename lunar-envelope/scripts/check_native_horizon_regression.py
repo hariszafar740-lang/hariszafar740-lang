@@ -19,5 +19,8 @@ def main():
         ground,profile,coverage,_=terrain.native_horizon(float(row['latitude']),float(row['longitude']),float(row['height_above_ground_m']))
         diff=terrain.horizon_at(profile,float(row['azimuth_deg']))-float(row['native_horizon_deg'])
         results.append({'latitude':float(row['latitude']),'longitude':float(row['longitude']),'azimuth':float(row['azimuth_deg']),'ground_difference_m':ground-float(row['native_ground_m']),'horizon_difference_deg':diff})
+    if max(abs(r['ground_difference_m']) for r in results)>1e-4:raise ValueError('Native ground regression')
+    if max(abs(r['horizon_difference_deg']) for r in results if r['azimuth']%1==0)>1e-6:raise ValueError('Integer-azimuth native ray regression')
+    if max(abs(r['horizon_difference_deg']) for r in results)>0.02:raise ValueError('Half-degree native ray regression')
     print(json.dumps({'cases':results,'max_ground_difference_m':max(abs(r['ground_difference_m']) for r in results),'max_horizon_difference_deg':max(abs(r['horizon_difference_deg']) for r in results),'seconds':time.monotonic()-started},sort_keys=True))
 if __name__=='__main__':main()

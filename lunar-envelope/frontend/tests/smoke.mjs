@@ -23,6 +23,10 @@ try {
   assert.equal(terrainData.sensitivity_offset_deg,1);
   assert.equal(terrainData.peak_distance_km.length,360);
   assert.match(await page.locator('.terrain-result').innerText(),/not a measured uncertainty/);
+  await page.getByRole('combobox',{name:'Terrain raster resolution'}).selectOption('native');
+  await page.getByRole('button',{name:'SAMPLE SITE A TERRAIN'}).click();
+  await page.getByRole('alert').filter({hasText:'Native LOLA rasters'}).waitFor();
+  await page.getByRole('combobox',{name:'Terrain raster resolution'}).selectOption('coarse');
   await page.getByRole('spinbutton',{name:'Observer height above terrain in meters'}).fill('10');
   await page.getByText('Terrain inputs changed.',{exact:false}).waitFor();
   await page.getByRole('button',{name:'PIN CURRENT AS BASELINE'}).click();
