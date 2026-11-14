@@ -57,6 +57,11 @@ def main(directory,mirror=None):
     if stats['count']!=48217:raise ValueError('Unexpected row count')
     # Compare the kernels directly at a separate, evenly spaced set of dates.
     if mirror:
+        original_bytes=(directory/'de421.bsp').read_bytes()
+        mirror_bytes=mirror.read_bytes()
+        common=min(len(original_bytes),len(mirror_bytes))
+        offsets=[i for i,(a,b) in enumerate(zip(original_bytes,mirror_bytes)) if a!=b]
+        stats['file_comparison']={'naif_bytes':len(original_bytes),'mirror_bytes':len(mirror_bytes),'differing_overlap_bytes':len(offsets),'first_difference_offset':offsets[0] if offsets else None,'last_difference_offset':offsets[-1] if offsets else None,'naif_extra_bytes':len(original_bytes)-common}
         # Two kernels may coexist; last loaded takes precedence, so switch per body/time.
         # Restrict the direct kernel-to-kernel check to a reproducible 111 dates to
         # avoid repeatedly unloading the large SPK for every grid point.
