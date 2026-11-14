@@ -136,7 +136,20 @@ def test_horizons_reference_reproduction_and_direct_topocentric_vectors(tmp_path
     folder=Path(__file__).parent
     generated=tmp_path/'reference.csv'
     subprocess.run([sys.executable,str(folder.parent/'scripts/generate_horizons_axes_reference.py'),str(folder/'horizons_lunar_axes.csv'),str(folder/'horizons_de441_icrf.csv'),str(generated)],check=True)
-    assert generated.read_bytes()==(folder/'horizons_independent_axes_reference.csv').read_bytes()
+    with generated.open(newline='',encoding='ascii') as f, (folder/'horizons_independent_axes_reference.csv').open(newline='',encoding='ascii') as g:
+        observed_reader,expected_reader=csv.DictReader(f),csv.DictReader(g)
+        assert observed_reader.fieldnames==expected_reader.fieldnames
+        observed,expected=list(observed_reader),list(expected_reader)
+    assert len(observed)==len(expected)==60
+    # Last-bit arithmetic and decimal formatting can differ across Python
+    # versions and platforms. Compare identity exactly and values with small
+    # absolute tolerances; these are reproducibility tolerances, not scientific
+    # accuracy guarantees. In particular, do not enable a relative tolerance.
+    for actual,reference in zip(observed,expected):
+        for key in ('utc','latitude','longitude','height_m','body'):
+            assert actual[key]==reference[key]
+        for key,tolerance in (('azimuth_deg',1e-9),('elevation_deg',1e-9),('distance_km',1e-6)):
+            assert float(actual[key])==pytest.approx(float(reference[key]),rel=0,abs=tolerance)
     axes={}
     for r in csv.DictReader((folder/'horizons_lunar_axes.csv').open()):axes.setdefault(r['utc'],{})[r['axis']]=[float(r[k]) for k in ('x_km','y_km','z_km')]
     earth={r['utc']:r for r in csv.DictReader((folder/'horizons_de441_icrf.csv').open()) if r['body']=='EARTH'}
