@@ -62,6 +62,11 @@ def main(directory,mirror=None):
         common=min(len(original_bytes),len(mirror_bytes))
         offsets=[i for i,(a,b) in enumerate(zip(original_bytes,mirror_bytes)) if a!=b]
         stats['file_comparison']={'naif_bytes':len(original_bytes),'mirror_bytes':len(mirror_bytes),'differing_overlap_bytes':len(offsets),'first_difference_offset':offsets[0] if offsets else None,'last_difference_offset':offsets[-1] if offsets else None,'naif_extra_bytes':len(original_bytes)-common,'naif_daf_format':original_bytes[88:96].decode('ascii',errors='replace'),'mirror_daf_format':mirror_bytes[88:96].decode('ascii',errors='replace')}
+        # Locate a long mirror data slice in the original; evidence for layout
+        # differences, not proof that all numerical records are equivalent.
+        sample=mirror_bytes[4096:4224]
+        stats['file_comparison']['mirror_offset_4096_first_found_at_naif_offset']=original_bytes.find(sample)
+        stats['file_comparison']['trailing_mirror_matches_shifted_naif']=original_bytes[6144:]==mirror_bytes[4096:]
         # Two kernels may coexist; last loaded takes precedence, so switch per body/time.
         # Restrict the direct kernel-to-kernel check to a reproducible 111 dates to
         # avoid repeatedly unloading the large SPK for every grid point.
