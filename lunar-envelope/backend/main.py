@@ -108,11 +108,9 @@ def health(): return {'status':'ok'}
 @app.post('/api/compare-sites')
 def compare_sites(request: PlanRequest):
     try:
-        ephemeris.load_table()
-    except (OSError, ValueError) as exc:
-        raise HTTPException(status_code=503, detail='Ephemeris dataset unavailable or failed integrity check') from exc
-    try:
         return compare(request)
+    except ephemeris.DataUnavailable as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
     except OSError as exc:
@@ -125,15 +123,18 @@ def space_weather(days:int = Query(default=7,ge=1,le=30)):
 @app.get('/api/data-catalog')
 def data_catalog():
     try:
-        count=len(ephemeris.load_table()[0]); ephem_status='available'
+        count=len(ephemeris.load_extended()[0]); ephem_status='available'; ephem_coverage='2020–2030 UTC'
     except (ValueError, OSError):
-        count=0;ephem_status='unavailable'
+        try:
+            count=len(ephemeris.load_table()[0]); ephem_status='available'; ephem_coverage='2026 UTC fallback only'
+        except (ValueError,OSError):
+            count=0;ephem_status='unavailable'; ephem_coverage='not installed'
     try:
         n=len(diviner.observations()); diviner_status='available'
     except (ValueError, OSError):
         n=0;diviner_status='unavailable'
     return {'datasets':[
-        {'name':'JPL DE421 derived vectors','status':ephem_status,'kind':'calculated historical/predictive ephemeris, not live', 'count':count,'coverage':'2026 UTC','source':'https://naif.jpl.nasa.gov/naif/data.html'},
+        {'name':'JPL DE421 derived vectors','status':ephem_status,'kind':'calculated historical/predictive ephemeris, not live', 'count':count,'coverage':ephem_coverage,'source':'https://naif.jpl.nasa.gov/naif/data.html'},
         {'name':'LRO Diviner subset','status':diviner_status,'kind':'historical observations','count':n,'coverage':'sparse south-polar subset','source':diviner.SOURCE_URL},
         {'name':'LRO LOLA terrain','status':'unavailable','kind':'historical topography','coverage':'not installed','source':'https://pgda.gsfc.nasa.gov/products/81'},
         {'name':'LADEE LDEX / NMS / UVS','status':'unavailable','kind':'historical observations','coverage':'not installed','source':'https://sbn.psi.edu/pds/resource/ldex.html'},

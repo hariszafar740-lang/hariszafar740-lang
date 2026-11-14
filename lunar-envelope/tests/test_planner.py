@@ -55,7 +55,7 @@ def test_compare_two_sites_and_invariants():
 
 def test_input_and_coverage_rejected():
     base={'start':'2026-11-14T12:00:00Z','days':7,'sites':[{'name':'A','latitude':-85,'longitude':0}]}
-    for changes in [{'start':'2026-11-14T12:00:00'}, {'days':15}, {'start':'2026-12-31T00:00:00Z'}, {'sites':[]}, {'sites':[{'name':'A','latitude':91,'longitude':0}]}]:
+    for changes in [{'start':'2026-11-14T12:00:00'}, {'days':15}, {'start':'2030-12-31T00:00:00Z'}, {'sites':[]}, {'sites':[{'name':'A','latitude':91,'longitude':0}]}]:
         assert client.post('/api/compare-sites',json={**base,**changes}).status_code==422
     p=PlanRequest(**{**base,'start':'2026-11-14T17:00:00+05:00'})
     assert p.start.isoformat()=='2026-11-14T12:00:00+00:00'
@@ -86,12 +86,13 @@ def test_weather_live_source_and_network_failure(monkeypatch):
 
 def test_integrity_failure_and_interval_arithmetic(monkeypatch,tmp_path):
     broken=tmp_path/'broken.csv';broken.write_text('not a verified dataset')
-    ephemeris.load_table.cache_clear()
+    ephemeris.load_table.cache_clear();ephemeris.load_extended.cache_clear()
     monkeypatch.setattr(ephemeris,'PATH',broken)
+    monkeypatch.setattr(ephemeris,'EXTENDED_PATH',broken)
     with pytest.raises(ValueError,match='checksum'):ephemeris.load_table()
     response=client.post('/api/compare-sites',json={'start':'2026-11-14T12:00:00Z','days':1,'sites':[{'name':'A','latitude':0,'longitude':0}]})
     assert response.status_code==503
-    ephemeris.load_table.cache_clear()
+    ephemeris.load_table.cache_clear();ephemeris.load_extended.cache_clear()
 
 def test_windows_and_solar_geometry():
     r=compare(PlanRequest(start='2026-11-14T12:00:00Z',days=7,sites=[{'name':'A','latitude':-85,'longitude':0}]))['sites'][0]
@@ -106,8 +107,8 @@ def test_variable_resolution_intervals(step):
     req=PlanRequest(start='2026-11-14T12:00:00Z',days=2,step_minutes=step,sun_clearance_deg=1.5,earth_clearance_deg=2,sites=[{'name':'A','latitude':-85,'longitude':0}])
     result=compare(req);site=result['sites'][0]
     assert result['step_minutes']==step and len(site['timeline'])==2*24*60//step
-    assert result['dataset_sha256']==ephemeris.SHA256
-    assert result['model_version']=='lunaris-geometry-1.1'
+    assert result['dataset_sha256']==ephemeris.EXTENDED_SHA256
+    assert result['model_version']=='lunaris-geometry-1.2'
     assert site['sun_hours']==sum(x['sun_up'] for x in site['timeline'])*step/60
     assert site['earth_hours']==sum(x['earth_up'] for x in site['timeline'])*step/60
     assert site['overlap_hours']==sum(x['sun_up'] and x['earth_up'] for x in site['timeline'])*step/60

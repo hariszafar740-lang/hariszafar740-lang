@@ -6,3 +6,4 @@
 .nav-header-title b,.nav-field>small,.site-input-title>span:last-child,.timeline-axis,.nav-footer{color:#8da8b1}
 .result-provenance{font-size:10px;color:#a2b8bd;overflow-wrap:anywhere;line-height:1.5}
 @media print{.result-provenance{color:#000!important}}
+.height-input{display:block;font-size:8px;color:#91a8ae;margin-top:10px;letter-spacing:.05em}.height-input input{display:block;width:100%;margin-top:5px;background:#0b1a23;border:1px solid #36515c;border-radius:4px;color:#d1e1e3;padding:7px;font:inherit;font-size:11px}
