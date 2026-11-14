@@ -1,4 +1,4 @@
-# Lunaris — lunar environment lab
+# Lunaris — lunar landing site navigator & environment lab
 
 **A NASA Space Apps Challenge concept for exploring lunar surface conditions.**
 I built Lunaris to practise turning open planetary observations and space-physics assumptions into an understandable mission-planning interface, especially for lunar solar-power and surface-operation questions. The aim is to prepare a challenge-ready project that connects science, software and practical engineering. This is a personal prototype, not an official NASA product; it does not claim that it was submitted, selected, endorsed, or awarded.
@@ -6,6 +6,14 @@ I built Lunaris to practise turning open planetary observations and space-physic
 ![Lunaris mission-control interface showing the lunar globe, scenario controls and inspector](docs/workspace.png)
 
 **Important:** Models are illustrative and unvalidated. The historical Diviner subset is not live telemetry. Do not use any output for mission, equipment or EVA decisions. [Read the complete self-audit and roadmap](AUDIT.md).
+
+## Site Navigator — Phase 1 status
+
+**Phase 1 is not complete.** This implementation compares 1–3 sites in 2026 using a checksum-gated, precomputed third-party table of JPL DE421/NAIF-derived Moon-fixed geometric vectors. It linearly interpolates vectors, computes topocentric Sun and Earth target-center elevations on a spherical Moon, and reports approximate one-hour midpoint sunlight, Earth-visibility and overlap bins and intervals. It does not call Horizons live and does not use current lunar observations. The UI exposes two editable sites; the API supports three. A simple horizontal-panel geometry indicator averages `max(0, sin(solar elevation))`, relative to unshaded normal-incidence irradiance. It is **not electrical power or an energy prediction**: terrain, efficiency, panel temperature, degradation and hardware are not modeled.
+
+The optional server-side DONKI CME query is disabled by default. Set `LUNARIS_DONKI_ENABLED=1` before starting the server to enable an on-demand external request; cached responses include their actual fetch time and may be up to ten minutes old. NASA DONKI events are research context, not a lunar radiation or mission safety forecast. Network failure returns unavailable, not simulated data. Without network access the bundled geometry and Diviner sample still work once dependencies have been installed.
+
+No LOLA terrain, topographic horizons, complete Diviner coverage, LADEE observations, live Horizons ingest, full pipeline, global uncertainty analysis, expert validation or public deployment is present. See [ephemeris provenance and geometry limits](data/ephemeris/README.md) and [self-audit](AUDIT.md). This is a screening prototype, not flight-qualified, and is not an EVA or communication guarantee.
 
 ## Try the prototype
 
@@ -64,7 +72,7 @@ Windows users can replace `py -3.11` with another installed Python 3.11+ executa
 
 ### A 90-second walkthrough
 
-1. Open **GUIDED TOUR**, then select a point or enter coordinates. The globe texture is procedural, not a lunar map.
+1. In the Site Navigator, edit the UTC window and site coordinates, then choose **COMPARE SCENARIOS**. View approximate intervals and data status. Open **EXOSPHERE LAB**, then **GUIDED TOUR**, and select a point or enter coordinates. The globe texture is procedural, not a lunar map.
 2. Change lunar phase or run a hypothetical stress test; inspect the model output and the 30-day screening strip.
 3. In **Diviner archive**, select **GO TO SAMPLE SITE** to see a historical observation next to an approximate-local-time model estimate. It is not a validation.
 4. Download a **CSV** or **PDF** report. Candidate intervals are screening indicators, **not safe EVA windows**.
@@ -105,6 +113,9 @@ It writes a separate provenance JSON and refuses an existing output; use `--mode
 
 ## API
 
+- `POST /api/compare-sites` — geometric site comparison; accepts timezone-aware `start`, `days` (1–14), and 1–3 named sites with latitude/longitude. Full interval must fit 2026 UTC.
+- `GET /api/data-catalog` — available, disabled or unavailable data sources.
+- `GET /api/space-weather?days=7` — optional DONKI CME event context; disabled unless enabled on the server.
 - `GET /api/health` — readiness
 - `POST /api/simulate` — accepts `phase`, `wind`, `uv`, `meteor`, `latitude`, `longitude`; returns model outputs and a 30-day curve.
 - `GET /api/nasa-data` — reports availability and provenance of the bundled subset.

@@ -1,11 +1,13 @@
 """Phase 1 lunar environment demonstrator. Not flight-qualified."""
 from __future__ import annotations
+import os
 import csv
 import io
 import math
 from pathlib import Path
-from fastapi import FastAPI, Query
-from . import diviner
+from fastapi import FastAPI, Query, HTTPException
+from . import diviner, ephemeris, donki
+from .planner import PlanRequest, compare
 from fastapi.responses import StreamingResponse, FileResponse
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
@@ -102,6 +104,40 @@ def calculate(s: Scenario):
 
 @app.get('/api/health')
 def health(): return {'status':'ok'}
+
+@app.post('/api/compare-sites')
+def compare_sites(request: PlanRequest):
+    try:
+        ephemeris.load_table()
+    except (OSError, ValueError) as exc:
+        raise HTTPException(status_code=503, detail='Ephemeris dataset unavailable or failed integrity check') from exc
+    try:
+        return compare(request)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    except OSError as exc:
+        raise HTTPException(status_code=503, detail='Ephemeris dataset unavailable') from exc
+
+@app.get('/api/space-weather')
+def space_weather(days:int = Query(default=7,ge=1,le=30)):
+    return donki.recent(days)
+
+@app.get('/api/data-catalog')
+def data_catalog():
+    try:
+        count=len(ephemeris.load_table()[0]); ephem_status='available'
+    except (ValueError, OSError):
+        count=0;ephem_status='unavailable'
+    try:
+        n=len(diviner.observations()); diviner_status='available'
+    except (ValueError, OSError):
+        n=0;diviner_status='unavailable'
+    return {'datasets':[
+        {'name':'JPL DE421 derived vectors','status':ephem_status,'kind':'calculated historical/predictive ephemeris, not live', 'count':count,'coverage':'2026 UTC','source':'https://naif.jpl.nasa.gov/naif/data.html'},
+        {'name':'LRO Diviner subset','status':diviner_status,'kind':'historical observations','count':n,'coverage':'sparse south-polar subset','source':diviner.SOURCE_URL},
+        {'name':'LRO LOLA terrain','status':'unavailable','kind':'historical topography','coverage':'not installed','source':'https://pgda.gsfc.nasa.gov/products/81'},
+        {'name':'LADEE LDEX / NMS / UVS','status':'unavailable','kind':'historical observations','coverage':'not installed','source':'https://sbn.psi.edu/pds/resource/ldex.html'},
+        {'name':'NASA DONKI','status':'enabled_unchecked' if os.environ.get('LUNARIS_DONKI_ENABLED') == '1' else 'disabled','kind':'near-real-time event catalogue','coverage':'on-demand; check connection','source':'https://ccmc.gsfc.nasa.gov/tools/DONKI/'}]}
 
 @app.post('/api/simulate')
 def simulate(s: Scenario): return calculate(s)
