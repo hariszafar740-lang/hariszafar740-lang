@@ -18,6 +18,7 @@ RADIAL_STEP_M = 100
 MIN_DISTANCE_M = 600
 MAX_DISTANCE_M = 300000
 AZIMUTH_STEP_DEG = 1
+SENSITIVITY_DEG = 0.25  # illustrative perturbation, not a measured error bound
 SOURCE = 'https://github.com/localizedprojects/CLPS-MOON-BROWSER/tree/9801046af387d40cc77db4f0557c802ad8cee5b4'
 
 class TerrainUnavailable(Exception):
@@ -77,11 +78,11 @@ def horizon(latitude,longitude,observer_height_m):
     east=(-math.sin(lam),math.cos(lam),0.)
     # Precompute the trigonometry of the range steps once.
     arc=[(math.sin(d/R),math.cos(d/R)) for d in range(MIN_DISTANCE_M,MAX_DISTANCE_M+1,RADIAL_STEP_M)]
-    values=[]; coverage=[]
+    values=[]; coverage=[]; peak_distances=[]
     for az in range(0,360,AZIMUTH_STEP_DEG):
         a=math.radians(az); ca=math.cos(a);sa=math.sin(a)
         direction=tuple(ca*north[i]+sa*east[i] for i in range(3))
-        best=-90.;last_distance=0
+        best=-90.;last_distance=0;peak_distance=0
         for index,(sn,cs) in enumerate(arc):
             ux=up[0]*cs+direction[0]*sn;uy=up[1]*cs+direction[1]*sn;uz=up[2]*cs+direction[2]*sn
             k=2*R/(1-uz)
@@ -89,20 +90,25 @@ def horizon(latitude,longitude,observer_height_m):
             if h is None:break
             last_distance=MIN_DISTANCE_M+index*RADIAL_STEP_M
             angle=math.degrees(math.atan2((R+h)*cs-(R+ground+observer_height_m),(R+h)*sn))
-            best=max(best,angle)
+            if angle>best:
+                best=angle;peak_distance=last_distance
         if not last_distance:raise ValueError('Terrain ray starts outside raster')
-        values.append(best);coverage.append(last_distance/1000)
-    return ground,tuple(values),tuple(coverage)
+        values.append(best);coverage.append(last_distance/1000);peak_distances.append(peak_distance/1000)
+    return ground,tuple(values),tuple(coverage),tuple(peak_distances)
 
 def horizon_at(profile,azimuth):
     x=(azimuth%360)/AZIMUTH_STEP_DEG
     lo=math.floor(x);f=x-lo
     return profile[lo]*(1-f)+profile[(lo+1)%len(profile)]*f
 
+def sensitivity(margin):
+    """Would +/- the illustrative offset change the strict-above result?"""
+    return 'changes' if -SENSITIVITY_DEG < margin <= SENSITIVITY_DEG else 'unchanged'
+
 def screen(request):
     start=request.start;end=start+timedelta(days=request.days)
     data=ephemeris.select(start,end)
-    ground,profile,coverage=horizon(request.latitude,request.longitude,request.observer_height_m)
+    ground,profile,coverage,peak_distances=horizon(request.latitude,request.longitude,request.observer_height_m)
     samples=[]
     for i in range(request.days*24*60//request.step_minutes):
         at=start+timedelta(minutes=(i+.5)*request.step_minutes)
@@ -113,10 +119,20 @@ def screen(request):
             if not target['azimuth_defined']:
                 item[body+'_above_sampled']=None
                 item[body+'_horizon_deg']=None
+                item[body+'_margin_deg']=None
+                item[body+'_sensitivity']=None
+                item[body+'_neighbor_coverage_min_km']=None
             else:
-                h=horizon_at(profile,target['azimuth_deg'])
+                az=target['azimuth_deg']%360
+                h=horizon_at(profile,az)
+                margin=target['elevation_deg']-h
+                lo=math.floor(az/AZIMUTH_STEP_DEG)
                 item[body+'_horizon_deg']=round(h,4)
-                item[body+'_above_sampled']=target['elevation_deg']>h
+                item[body+'_margin_deg']=round(margin,6)
+                item[body+'_above_sampled']=margin>0
+                # Two illustrative horizon offsets, not a probability or bound.
+                item[body+'_sensitivity']=sensitivity(margin)
+                item[body+'_neighbor_coverage_min_km']=min(coverage[lo],coverage[(lo+1)%len(coverage)])
             item[body+'_elevation_deg']=target['elevation_deg']
             item[body+'_azimuth_deg']=target['azimuth_deg'] if target['azimuth_defined'] else None
         samples.append(item)
@@ -126,17 +142,22 @@ def screen(request):
             'ground_elevation_m':round(ground,2),'start':start.isoformat().replace('+00:00','Z'),
             'end':end.isoformat().replace('+00:00','Z'),'step_minutes':request.step_minutes,
             'azimuth_step_deg':AZIMUTH_STEP_DEG,'min_distance_m':MIN_DISTANCE_M,'radial_step_m':RADIAL_STEP_M,'max_distance_km':MAX_DISTANCE_M/1000,
-            'horizon_deg':[round(x,4) for x in profile],'coverage_km':coverage,'samples':samples,
+            'horizon_deg':[round(x,4) for x in profile],'coverage_km':coverage,
+            'peak_distance_km':peak_distances,'edge_truncated_azimuths':sum(d<MAX_DISTANCE_M/1000 for d in coverage),
+            'sensitivity_offset_deg':SENSITIVITY_DEG,'samples':samples,
             'sun_above_sampled_hours':count(lambda b:b['sun_above_sampled'] is True),
             'earth_above_sampled_hours':count(lambda b:b['earth_above_sampled'] is True),
             'both_above_sampled_hours':count(lambda b:b['sun_above_sampled'] is True and b['earth_above_sampled'] is True),
             'unknown_hours':count(lambda b:b['sun_above_sampled'] is None or b['earth_above_sampled'] is None),
+            'sun_sensitive_hours':count(lambda b:b['sun_sensitivity']=='changes'),
+            'earth_sensitive_hours':count(lambda b:b['earth_sensitivity']=='changes'),
             'terrain_sha256':SHA256,'terrain_source':SOURCE,'ephemeris_sha256':data.digest,'ephemeris_kind':data.kind,
-            'method_version':'lunaris-terrain-0.1','frame':'MOON_ME_DE421','radius_m':R,
+            'method_version':'lunaris-terrain-0.2','frame':'MOON_ME_DE421','radius_m':R,
             'assumptions':{'projection':'south polar stereographic, east-positive longitude, planetocentric latitude',
                            'height':'observer height above bilinearly interpolated terrain; 400 m grid',
                            'horizon':'maximum sampled terrain angle with spherical curvature; linear interpolation in azimuth',
                            'geometry':'geometric target centers; no light-time or aberration',
                            'classification':'strictly above sampled horizon at bin midpoint; no fixed clearance',
+                           'sensitivity':'fixed +/- 0.25 degree horizon perturbation, illustrative only; not a terrain-error or confidence bound',
                            'time':'UTC; future leap seconds not predicted'},
             'limits':'400 m averaged terrain, interpolated from 600 m to 300 km or raster edge, whichever comes first; missing near-field, distant and subpixel obstructions, surface uncertainty, finite disks and occultations. Above sampled horizon does not establish visibility; below is also model-dependent. No operational use.'}

@@ -92,3 +92,6 @@ jobs:
           python -m pip install numpy==2.3.5
           result=$(python lunar-envelope/scripts/validate_terrain_sources.py "$RUNNER_TEMP/pds")
           echo "::notice title=PDS comparison::$result"
+          python lunar-envelope/scripts/compare_terrain_high_resolution.py "$RUNNER_TEMP/pds" "$RUNNER_TEMP/terrain.csv"
+          payload=$(gzip -c "$RUNNER_TEMP/terrain.csv" | base64 -w0)
+          echo "::notice title=PDS rays::$payload"
