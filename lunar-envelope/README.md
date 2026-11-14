@@ -3,13 +3,13 @@
 **A NASA Space Apps Challenge concept for exploring lunar surface conditions.**
 I built Lunaris to practise turning open planetary observations and space-physics assumptions into an understandable mission-planning interface, especially for lunar solar-power and surface-operation questions. The aim is to prepare a challenge-ready project that connects science, software and practical engineering. This is a personal prototype, not an official NASA product; it does not claim that it was submitted, selected, endorsed, or awarded.
 
-![Lunaris mission-control interface showing the lunar globe, scenario controls and inspector](docs/workspace.png)
+![Lunaris site navigator showing scenario controls, sky plot, comparison cards and timeline](docs/workspace.png)
 
 **Important:** Models are illustrative and unvalidated. The historical Diviner subset is not live telemetry. Do not use any output for mission, equipment or EVA decisions. [Read the complete self-audit and roadmap](AUDIT.md).
 
 ## Site Navigator — Phase 1 status
 
-**Phase 1 is not complete.** This implementation compares 1–3 sites in 2026 using a checksum-gated, precomputed third-party table of JPL DE421/NAIF-derived Moon-fixed geometric vectors. It linearly interpolates vectors, computes topocentric Sun and Earth target-center elevations on a spherical Moon, and reports approximate one-hour midpoint sunlight, Earth-visibility and overlap bins and intervals. It does not call Horizons live and does not use current lunar observations. The UI exposes two editable sites; the API supports three. A simple horizontal-panel geometry indicator averages `max(0, sin(solar elevation))`, relative to unshaded normal-incidence irradiance. It is **not electrical power or an energy prediction**: terrain, efficiency, panel temperature, degradation and hardware are not modeled.
+**Phase 1 is not complete.** This implementation compares 1–3 sites in 2026 using a checksum-gated, precomputed third-party table of JPL DE421/NAIF-derived Moon-fixed geometric vectors. It linearly interpolates vectors, computes topocentric Sun and Earth target-center elevations on a spherical Moon, and reports approximate 15-, 30-, or 60-minute midpoint sunlight, Earth-visibility and overlap bins and intervals above chosen fixed clearance angles. It does not call Horizons live and does not use current lunar observations. The UI and API support three editable sites. A simple horizontal-panel geometry indicator averages `max(0, sin(solar elevation))`, relative to unshaded normal-incidence irradiance. It is **not electrical power or an energy prediction**: terrain, efficiency, panel temperature, degradation and hardware are not modeled.
 
 The optional server-side DONKI CME query is disabled by default. Set `LUNARIS_DONKI_ENABLED=1` before starting the server to enable an on-demand external request; cached responses include their actual fetch time and may be up to ten minutes old. NASA DONKI events are research context, not a lunar radiation or mission safety forecast. Network failure returns unavailable, not simulated data. Without network access the bundled geometry and Diviner sample still work once dependencies have been installed.
 
@@ -72,7 +72,7 @@ Windows users can replace `py -3.11` with another installed Python 3.11+ executa
 
 ### A 90-second walkthrough
 
-1. In the Site Navigator, edit the UTC window and site coordinates, then choose **COMPARE SCENARIOS**. View approximate intervals and data status. Open **EXOSPHERE LAB**, then **GUIDED TOUR**, and select a point or enter coordinates. The globe texture is procedural, not a lunar map.
+1. In the Site Navigator, edit the UTC window, bin size, clearances and up to three sites; choose **COMPARE SCENARIOS**. Move the sky-time slider, pin a baseline, change a date or threshold and compare again. Export JSON or print/save the current result as PDF. Open **EXOSPHERE LAB**, then **GUIDED TOUR**, and select a point or enter coordinates. The globe texture is procedural, not a lunar map.
 2. Change lunar phase or run a hypothetical stress test; inspect the model output and the 30-day screening strip.
 3. In **Diviner archive**, select **GO TO SAMPLE SITE** to see a historical observation next to an approximate-local-time model estimate. It is not a validation.
 4. Download a **CSV** or **PDF** report. Candidate intervals are screening indicators, **not safe EVA windows**.
@@ -97,7 +97,9 @@ Physical context: [NASA Moon fact sheet](https://nssdc.gsfc.nasa.gov/planetary/f
 
 ## Phase 2 features and gaps
 
-Guided Story Mode walks through the prototype. The inspector compares a nearby historic Diviner temperature against the grey-body model at approximately matching local solar time; season, terrain, and observation averaging are not matched, so it is **not validation**. The 30-day strip, CSV and PDF reports show illustrative screening results, not flight or EVA recommendations. No mitigation duty-cycle recommendation can be justified from these models. See [AUDIT.md](AUDIT.md) for the unfinished work and a self-audit; Phase 2 is **not complete**.
+Phase 2 is **not complete**. The navigator now has a sky-time scrubber, three sites, fixed clearance thresholds, configurable midpoint resolution, a +2° sensitivity comparison, pinned date/assumption baseline, coordinate-matched trade table, reproducible JSON export and browser print/PDF. The thresholds are abstract angles, not terrain horizons, and the sensitivity test is not an uncertainty interval. The horizontal-panel geometry fraction uses an unobstructed 0° horizon independently of the clearance thresholds. Baselines remain in browser memory only; JSON contains both snapshots and their inputs, frame, model version, dataset hash and limitations. Differences between different durations, coordinates or assumptions do not establish a winning site. [Demo outline and references](docs/DEMO.md) are ready to adapt, not a completed challenge submission.
+
+The legacy lab's Guided Story Mode and Diviner comparison remain available; its physics is illustrative, not a validated NASA-data model. Scientific expert review, true LOLA/terrain ingestion, validated system and power constraints, a public demonstration, user testing and a completed official submission remain absent. No one can guarantee a win or honestly award an independent 10/10 without an actual independent reviewer. See [AUDIT.md](AUDIT.md).
 
 The product-specific ingestion tool can extract a bounded selection from the bundled sample or the original full, checksum-matched product (see the pinned URLs in `data/diviner/README.md`):
 
@@ -113,7 +115,7 @@ It writes a separate provenance JSON and refuses an existing output; use `--mode
 
 ## API
 
-- `POST /api/compare-sites` — geometric site comparison; accepts timezone-aware `start`, `days` (1–14), and 1–3 named sites with latitude/longitude. Full interval must fit 2026 UTC.
+- `POST /api/compare-sites` — geometric site comparison; accepts timezone-aware `start`, `days` (1–14), 1–3 named sites with latitude/longitude, optional `step_minutes` (15, 30 or 60), and optional `sun_clearance_deg` / `earth_clearance_deg` (0–10). Full interval must fit 2026 UTC.
 - `GET /api/data-catalog` — available, disabled or unavailable data sources.
 - `GET /api/space-weather?days=7` — optional DONKI CME event context; disabled unless enabled on the server.
 - `GET /api/health` — readiness

@@ -100,3 +100,41 @@ def test_windows_and_solar_geometry():
         assert total==hours
     assert 0<=r['ideal_horizontal_solar_fraction_mean']<=1
     assert r['ideal_horizontal_solar_fraction_mean']==pytest.approx(sum(max(0,math.sin(math.radians(b['sun_elevation_deg']))) for b in r['timeline'])/len(r['timeline']))
+
+@pytest.mark.parametrize('step',[15,30,60])
+def test_variable_resolution_intervals(step):
+    req=PlanRequest(start='2026-11-14T12:00:00Z',days=2,step_minutes=step,sun_clearance_deg=1.5,earth_clearance_deg=2,sites=[{'name':'A','latitude':-85,'longitude':0}])
+    result=compare(req);site=result['sites'][0]
+    assert result['step_minutes']==step and len(site['timeline'])==2*24*60//step
+    assert result['dataset_sha256']==ephemeris.SHA256
+    assert result['model_version']=='lunaris-geometry-1.1'
+    assert site['sun_hours']==sum(x['sun_up'] for x in site['timeline'])*step/60
+    assert site['earth_hours']==sum(x['earth_up'] for x in site['timeline'])*step/60
+    assert site['overlap_hours']==sum(x['sun_up'] and x['earth_up'] for x in site['timeline'])*step/60
+    assert site['overlap_hours_plus_2deg']<=site['overlap_hours']
+    assert all(b['sun_up']==(b['sun_elevation_deg']>1.5) and b['earth_up']==(b['earth_elevation_deg']>2) for b in site['timeline'])
+    for key,hours in [('sun',site['sun_hours']),('earth',site['earth_hours']),('overlap',site['overlap_hours'])]:
+        intervals=site[key+'_windows']
+        total=sum((datetime.fromisoformat(w['end'].replace('Z','+00:00'))-datetime.fromisoformat(w['start'].replace('Z','+00:00'))).total_seconds()/3600 for w in intervals)
+        assert total==hours
+        assert all(a['end']<b['start'] for a,b in zip(intervals,intervals[1:]))
+
+def test_threshold_monotonic_and_default_backward_compatibility():
+    base={'start':'2026-11-14T12:00:00Z','days':3,'step_minutes':15,'sites':[{'name':'A','latitude':-85,'longitude':0}]}
+    result=compare(PlanRequest(**base))['sites'][0]
+    higher=compare(PlanRequest(**base,sun_clearance_deg=2,earth_clearance_deg=2))['sites'][0]
+    assert higher['overlap_hours']==result['overlap_hours_plus_2deg']
+    assert higher['sun_hours']<=result['sun_hours'] and higher['earth_hours']<=result['earth_hours']
+    assert higher['ideal_horizontal_solar_fraction_mean']==result['ideal_horizontal_solar_fraction_mean']
+    assert all(0<=t['sun_azimuth_deg']<360 and 0<=t['earth_azimuth_deg']<360 for t in result['timeline'])
+
+def test_invalid_resolution_and_thresholds():
+    base={'start':'2026-11-14T12:00:00Z','days':1,'sites':[{'name':'A','latitude':-85,'longitude':0}]}
+    for change in [{'step_minutes':5},{'step_minutes':20},{'sun_clearance_deg':-1},{'earth_clearance_deg':11},{'earth_clearance_deg':'NaN'}]:
+        assert client.post('/api/compare-sites',json={**base,**change}).status_code==422
+
+def test_max_load_and_end_boundary():
+    req={'start':'2026-12-18T00:00:00Z','days':14,'step_minutes':15,'sites':[{'name':str(i),'latitude':-85-i,'longitude':i} for i in range(3)]}
+    response=client.post('/api/compare-sites',json=req)
+    assert response.status_code==200 and response.json()['end']=='2027-01-01T00:00:00Z'
+    assert len(response.json()['sites'][2]['timeline'])==1344
