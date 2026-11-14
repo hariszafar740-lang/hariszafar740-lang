@@ -71,7 +71,7 @@ Windows users can replace `py -3.11` with another installed Python 3.11+ executa
 
 ## Development and tests
 
-With dependencies installed, start the backend from this directory using `.venv/bin/python -m uvicorn backend.main:app --host 127.0.0.1 --port 8000`, and run `npm run dev` from `frontend` in another terminal. Vite proxies `/api` to the backend. Backend tests: `.venv/bin/pip install pytest httpx && .venv/bin/python -m pytest -q tests`; frontend: `npm run build` from `frontend`. With the app running and Chromium installed, run `CHROMIUM_PATH=/path/to/chromium npm run test:e2e` from `frontend`. Automated CI configuration is included but has not been verified on GitHub until its workflow runs.
+With dependencies installed, start the backend from this directory using `.venv/bin/python -m uvicorn backend.main:app --host 127.0.0.1 --port 8000`, and run `npm run dev` from `frontend` in another terminal. Vite proxies `/api` to the backend. Backend tests: `.venv/bin/pip install pytest httpx && .venv/bin/python -m pytest -q tests`; frontend: `npm run build` from `frontend`. With the app running and Chromium installed, run `CHROMIUM_PATH=/path/to/chromium npm run test:e2e` from `frontend`. The GitHub Actions workflow passed for commit `7109b63` ([run](https://github.com/hariszafar740-lang/hariszafar740-lang/actions/runs/43580779798)); check the latest run for later changes.
 
 ## What the model does
 
