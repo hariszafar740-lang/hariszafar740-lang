@@ -72,3 +72,24 @@ jobs:
         run: npm ci --prefix frontend && npm run build --prefix frontend
       - name: Run API and model checks on Python 3.14
         run: python -m pytest -q tests
+  naif-source-check:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Compare NASA NAIF source files
+        shell: bash
+        run: |
+          set -euo pipefail
+          base=https://naif.jpl.nasa.gov/pub/naif/generic_kernels
+          for spec in 'spk/planets/a_old_versions/de421.bsp' 'pck/moon_pa_de421_1900-2050.bpc' 'fk/satellites/moon_080317.tf' 'lsk/naif0012.tls'; do
+            file="$RUNNER_TEMP/$(basename "$spec")"
+            if curl --fail --silent --show-error --location --retry 2 --max-time 90 "$base/$spec" -o "$file"; then
+              size=$(wc -c < "$file")
+              sha=$(sha256sum "$file" | cut -d ' ' -f 1)
+              md5=$(md5sum "$file" | cut -d ' ' -f 1)
+              echo "::notice title=NAIF source hash::$(basename "$spec") size=$size SHA256=$sha MD5=$md5"
+            else
+              echo "::warning title=NAIF source unavailable::Could not download $base/$spec"
+            fi
+          done
