@@ -37,7 +37,7 @@ def main(directory):
     # intervals overlap input samples by (3,3,3,1), (2,3,3,2), (1,3,3,3)
     # 40 m units; denominator is 10*10, and DN->metres adds 2.
     weights=np.array([[3,3,3,1,0,0,0,0,0,0],[0,0,0,2,3,3,2,0,0,0],[0,0,0,0,0,0,1,3,3,3]],dtype=np.int64)
-    src=rasters['ldem_75s_120m.img']; nonzero=0;total_cells=0;maximum=0;examples=[];fills=0
+    src=rasters['ldem_75s_120m.img']; nonzero=0;total_cells=0;maximum=0;examples=[];fills=0;ties=0;nonties=0
     for p in range(0,760,20):
         q=min(p+20,760); block=np.asarray(src[12+p*10:12+q*10,12:7612],dtype=np.int64)
         fills+=int(np.count_nonzero((block==-32768)|(block==32767)))
@@ -48,9 +48,11 @@ def main(directory):
         # Inner region uses a different source; skip it rather than report it as an error.
         for r in range(max(380-row0,0),min(1900-row0,len(delta))):delta[r,380:1900]=0
         nz=np.argwhere(delta!=0)
-        for r,c in nz[:max(0,10-len(examples))]:examples.append([int(row0+r),int(c),int(delta[r,c])])
+        for r,c in nz[:max(0,10-len(examples))]:examples.append([int(row0+r),int(c),int(delta[r,c]),int(values[r,c])])
+        ties+=int(np.count_nonzero((delta!=0)&(values%200==100)))
+        nonties+=int(np.count_nonzero((delta!=0)&(values%200!=100)))
         nonzero+=len(nz); maximum=max(maximum,int(np.abs(delta).max()));total_cells+=delta.size
-    report['ring']={'cells':total_cells-1520*1520,'nonzero':nonzero,'max_abs_m':maximum,'examples_row_col_delta_m':examples,'fill_values_in_source_window':fills}
+    report['ring']={'cells':total_cells-1520*1520,'nonzero':nonzero,'max_abs_m':maximum,'examples_row_col_delta_m_numerator':examples,'exact_half_m_differences':ties,'other_differences':nonties,'fill_values_in_source_window':fills}
     print(json.dumps(report,sort_keys=True))
 if __name__=='__main__':
     if len(sys.argv)!=2:raise SystemExit(__doc__)
