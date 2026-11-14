@@ -103,3 +103,17 @@ jobs:
             ${{ runner.temp }}/naif0012.tls
           retention-days: 1
           if-no-files-found: error
+  horizons-retrieval:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch selected Horizons vectors
+        run: python lunar-envelope/scripts/fetch_horizons_validation.py "$RUNNER_TEMP/horizons"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: horizons-validation
+          path: ${{ runner.temp }}/horizons/
+          retention-days: 1
+          if-no-files-found: error
