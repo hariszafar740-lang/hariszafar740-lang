@@ -13,7 +13,7 @@ try {
   await page.getByText('LOCAL SKY GEOMETRY').waitFor();
   const provenance=page.getByRole('link',{name:'METHOD & PROVENANCE'});
   assert.equal(await provenance.getAttribute('href'),'/api/provenance/ephemeris');
-  const provenanceResponse=await page.request.get('/api/provenance/ephemeris');
+  const provenanceResponse=await page.request.get(new URL('/api/provenance/ephemeris',page.url()).href);
   assert.equal(provenanceResponse.status(),200);
   assert.match(await provenanceResponse.text(),/Lunar geometry data, provenance and validation/);
   assert.match(await page.locator('.nav-footer').innerText(),/HARIS ZAFAR/);
