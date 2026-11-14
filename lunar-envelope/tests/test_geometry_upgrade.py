@@ -119,3 +119,30 @@ def test_start_extremes_and_bad_scan_rejected():
     t=datetime(2026,1,1,tzinfo=UTC)
     with pytest.raises(ValueError):events.threshold_windows(t,t+timedelta(hours=1),timedelta(0),lambda x:1,0)
     with pytest.raises(ValueError):events.threshold_windows(t+timedelta(hours=1),t,timedelta(minutes=15),lambda x:1,0)
+
+@pytest.mark.parametrize('row',list(csv.DictReader((Path(__file__).parent/'horizons_independent_axes_reference.csv').open())))
+def test_horizons_independent_lunar_orientation(row):
+    # Horizons supplies DE441 vectors AND lunar axis orientations from separate
+    # site-to-Moon vectors. No local SPICE kernels create this reference.
+    ds=ephemeris.select(ephemeris.EXTENDED_START,ephemeris.EXTENDED_END)
+    at=datetime.fromisoformat(row['utc'].replace('Z','+00:00'))
+    got=ds.at(at,float(row['latitude']),float(row['longitude']),float(row['height_m']))[row['body'].lower()]
+    assert got['elevation_deg']==pytest.approx(float(row['elevation_deg']),abs=.001)
+    assert abs((got['azimuth_deg']-float(row['azimuth_deg'])+180)%360-180)<.002
+    assert got['distance_km']==pytest.approx(float(row['distance_km']),abs=15 if row['body']=='SUN' else 1.1)
+
+def test_horizons_reference_reproduction_and_direct_topocentric_vectors(tmp_path):
+    import math,subprocess,sys
+    folder=Path(__file__).parent
+    generated=tmp_path/'reference.csv'
+    subprocess.run([sys.executable,str(folder.parent/'scripts/generate_horizons_axes_reference.py'),str(folder/'horizons_lunar_axes.csv'),str(folder/'horizons_de441_icrf.csv'),str(generated)],check=True)
+    assert generated.read_bytes()==(folder/'horizons_independent_axes_reference.csv').read_bytes()
+    axes={}
+    for r in csv.DictReader((folder/'horizons_lunar_axes.csv').open()):axes.setdefault(r['utc'],{})[r['axis']]=[float(r[k]) for k in ('x_km','y_km','z_km')]
+    earth={r['utc']:r for r in csv.DictReader((folder/'horizons_de441_icrf.csv').open()) if r['body']=='EARTH'}
+    for row in csv.DictReader((folder/'horizons_earth_site_85s.csv').open()):
+        # Vectors in axes file point from the axis site to the Moon center.
+        v=axes[row['utc']];b=earth[row['utc']];phi=math.radians(-85)
+        for i,key in enumerate(('x_km','y_km','z_km')):
+            calculated=float(b[key])+math.cos(phi)*v['X'][i]+math.sin(phi)*v['Z'][i]
+            assert calculated==pytest.approx(float(row[key]),abs=1e-6)
