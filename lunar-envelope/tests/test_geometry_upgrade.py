@@ -206,3 +206,25 @@ def test_broader_horizons_differences_reproduce():
         for k in ('utc','latitude','longitude','height_m','body','reference_elevation_deg'):assert x[k]==y[k]
         for k in ('delta_elevation_deg','delta_azimuth_deg'):assert float(x[k])==pytest.approx(float(y[k]),abs=1e-9,rel=0)
         assert float(x['delta_distance_km'])==pytest.approx(float(y['delta_distance_km']),abs=1e-6,rel=0)
+
+
+def test_naif_downloader_verifies_before_publishing(monkeypatch,tmp_path):
+    import hashlib,importlib.util,io,sys
+    scripts=Path(__file__).parent.parent/'scripts'
+    monkeypatch.syspath_prepend(str(scripts))
+    spec=importlib.util.spec_from_file_location('fetch_naif_sources',scripts/'fetch_naif_sources.py')
+    module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+    data=b'kernel data';sha=hashlib.sha256(data).hexdigest()
+    monkeypatch.setattr(module,'RELATIVE',{'k.dat':'file'})
+    monkeypatch.setattr(module,'NAIF',{'k.dat':sha})
+    monkeypatch.setattr(module,'urlopen',lambda *a,**k:io.BytesIO(data))
+    out=tmp_path/'kernels';module.main(out)
+    assert (out/'k.dat').read_bytes()==data
+    monkeypatch.setattr(module,'urlopen',lambda *a,**k:pytest.fail('Should reuse verified file'))
+    module.main(out)
+    (out/'k.dat').write_bytes(b'corrupt')
+    with pytest.raises(ValueError,match='refusing overwrite'):module.main(out)
+    (out/'k.dat').unlink()
+    monkeypatch.setattr(module,'urlopen',lambda *a,**k:io.BytesIO(b'bad'))
+    with pytest.raises(ValueError,match='SHA-256 mismatch'):module.main(out)
+    assert list(out.iterdir())==[]
