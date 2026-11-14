@@ -93,3 +93,13 @@ jobs:
               echo "::warning title=NAIF source unavailable::Could not download $base/$spec"
             fi
           done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: naif-originals
+          path: |
+            ${{ runner.temp }}/de421.bsp
+            ${{ runner.temp }}/moon_pa_de421_1900-2050.bpc
+            ${{ runner.temp }}/moon_080317.tf
+            ${{ runner.temp }}/naif0012.tls
+          retention-days: 1
+          if-no-files-found: error
