@@ -1,0 +1,238 @@
+{
+  "cases": [
+    {
+      "azimuth": 0.0,
+      "ground_difference_m": -4.011569672002224e-07,
+      "horizon_difference_deg": -3.5695624234222123e-10,
+      "latitude": -89.4679,
+      "longitude": -137.411
+    },
+    {
+      "azimuth": 22.5,
+      "ground_difference_m": -4.011569672002224e-07,
+      "horizon_difference_deg": 6.262492646025297e-05,
+      "latitude": -89.4679,
+      "longitude": -137.411
+    },
+    {
+      "azimuth": 45.0,
+      "ground_difference_m": -4.011569672002224e-07,
+      "horizon_difference_deg": -4.282130205979229e-11,
+      "latitude": -89.4679,
+      "longitude": -137.411
+    },
+    {
+      "azimuth": 67.5,
+      "ground_difference_m": -4.011569672002224e-07,
+      "horizon_difference_deg": 0.002120941982140634,
+      "latitude": -89.4679,
+      "longitude": -137.411
+    },
+    {
+      "azimuth": 90.0,
+      "ground_difference_m": -4.011569672002224e-07,
+      "horizon_difference_deg": 3.3476199590154465e-10,
+      "latitude": -89.4679,
+      "longitude": -137.411
+    },
+    {
+      "azimuth": 135.0,
+      "ground_difference_m": -4.011569672002224e-07,
+      "horizon_difference_deg": 4.538796005704171e-10,
+      "latitude": -89.4679,
+      "longitude": -137.411
+    },
+    {
+      "azimuth": 180.0,
+      "ground_difference_m": -4.011569672002224e-07,
+      "horizon_difference_deg": 1.4317302898803064e-10,
+      "latitude": -89.4679,
+      "longitude": -137.411
+    },
+    {
+      "azimuth": 225.0,
+      "ground_difference_m": -4.011569672002224e-07,
+      "horizon_difference_deg": -3.5472202952746557e-10,
+      "latitude": -89.4679,
+      "longitude": -137.411
+    },
+    {
+      "azimuth": 270.0,
+      "ground_difference_m": -4.011569672002224e-07,
+      "horizon_difference_deg": 1.8461454587281878e-10,
+      "latitude": -89.4679,
+      "longitude": -137.411
+    },
+    {
+      "azimuth": 315.0,
+      "ground_difference_m": -4.011569672002224e-07,
+      "horizon_difference_deg": 2.8080604508318174e-10,
+      "latitude": -89.4679,
+      "longitude": -137.411
+    },
+    {
+      "azimuth": 359.5,
+      "ground_difference_m": -4.011569672002224e-07,
+      "horizon_difference_deg": -0.0015677275951558878,
+      "latitude": -89.4679,
+      "longitude": -137.411
+    },
+    {
+      "azimuth": 0.0,
+      "ground_difference_m": 3.670702426461503e-07,
+      "horizon_difference_deg": -7.115108502375733e-11,
+      "latitude": -85.98,
+      "longitude": -0.26
+    },
+    {
+      "azimuth": 22.5,
+      "ground_difference_m": 3.670702426461503e-07,
+      "horizon_difference_deg": 0.0006124224044612436,
+      "latitude": -85.98,
+      "longitude": -0.26
+    },
+    {
+      "azimuth": 45.0,
+      "ground_difference_m": 3.670702426461503e-07,
+      "horizon_difference_deg": 4.40708580740079e-12,
+      "latitude": -85.98,
+      "longitude": -0.26
+    },
+    {
+      "azimuth": 67.5,
+      "ground_difference_m": 3.670702426461503e-07,
+      "horizon_difference_deg": -0.008175260600045586,
+      "latitude": -85.98,
+      "longitude": -0.26
+    },
+    {
+      "azimuth": 90.0,
+      "ground_difference_m": 3.670702426461503e-07,
+      "horizon_difference_deg": -3.207132337479379e-10,
+      "latitude": -85.98,
+      "longitude": -0.26
+    },
+    {
+      "azimuth": 135.0,
+      "ground_difference_m": 3.670702426461503e-07,
+      "horizon_difference_deg": 3.7856517920431543e-10,
+      "latitude": -85.98,
+      "longitude": -0.26
+    },
+    {
+      "azimuth": 180.0,
+      "ground_difference_m": 3.670702426461503e-07,
+      "horizon_difference_deg": 1.3236745033395891e-10,
+      "latitude": -85.98,
+      "longitude": -0.26
+    },
+    {
+      "azimuth": 225.0,
+      "ground_difference_m": 3.670702426461503e-07,
+      "horizon_difference_deg": -4.4500403362235375e-11,
+      "latitude": -85.98,
+      "longitude": -0.26
+    },
+    {
+      "azimuth": 270.0,
+      "ground_difference_m": 3.670702426461503e-07,
+      "horizon_difference_deg": 3.3372593577496446e-10,
+      "latitude": -85.98,
+      "longitude": -0.26
+    },
+    {
+      "azimuth": 315.0,
+      "ground_difference_m": 3.670702426461503e-07,
+      "horizon_difference_deg": -1.9311607868388592e-10,
+      "latitude": -85.98,
+      "longitude": -0.26
+    },
+    {
+      "azimuth": 359.5,
+      "ground_difference_m": 3.670702426461503e-07,
+      "horizon_difference_deg": 0.00022835350105010477,
+      "latitude": -85.98,
+      "longitude": -0.26
+    },
+    {
+      "azimuth": 0.0,
+      "ground_difference_m": 1.9123763195239007e-07,
+      "horizon_difference_deg": 4.5373511892154994e-10,
+      "latitude": -80.13,
+      "longitude": 1.44
+    },
+    {
+      "azimuth": 22.5,
+      "ground_difference_m": 1.9123763195239007e-07,
+      "horizon_difference_deg": 0.008417001552986969,
+      "latitude": -80.13,
+      "longitude": 1.44
+    },
+    {
+      "azimuth": 45.0,
+      "ground_difference_m": 1.9123763195239007e-07,
+      "horizon_difference_deg": 4.236881956387606e-10,
+      "latitude": -80.13,
+      "longitude": 1.44
+    },
+    {
+      "azimuth": 67.5,
+      "ground_difference_m": 1.9123763195239007e-07,
+      "horizon_difference_deg": 0.00029099267511600857,
+      "latitude": -80.13,
+      "longitude": 1.44
+    },
+    {
+      "azimuth": 90.0,
+      "ground_difference_m": 1.9123763195239007e-07,
+      "horizon_difference_deg": 3.447730989591946e-10,
+      "latitude": -80.13,
+      "longitude": 1.44
+    },
+    {
+      "azimuth": 135.0,
+      "ground_difference_m": 1.9123763195239007e-07,
+      "horizon_difference_deg": -3.9664627138336073e-10,
+      "latitude": -80.13,
+      "longitude": 1.44
+    },
+    {
+      "azimuth": 180.0,
+      "ground_difference_m": 1.9123763195239007e-07,
+      "horizon_difference_deg": -8.970602038971265e-13,
+      "latitude": -80.13,
+      "longitude": 1.44
+    },
+    {
+      "azimuth": 225.0,
+      "ground_difference_m": 1.9123763195239007e-07,
+      "horizon_difference_deg": -2.3084822942109895e-10,
+      "latitude": -80.13,
+      "longitude": 1.44
+    },
+    {
+      "azimuth": 270.0,
+      "ground_difference_m": 1.9123763195239007e-07,
+      "horizon_difference_deg": -3.8714875749690236e-10,
+      "latitude": -80.13,
+      "longitude": 1.44
+    },
+    {
+      "azimuth": 315.0,
+      "ground_difference_m": 1.9123763195239007e-07,
+      "horizon_difference_deg": 2.3729707088193663e-10,
+      "latitude": -80.13,
+      "longitude": 1.44
+    },
+    {
+      "azimuth": 359.5,
+      "ground_difference_m": 1.9123763195239007e-07,
+      "horizon_difference_deg": 0.0027671147955659614,
+      "latitude": -80.13,
+      "longitude": 1.44
+    }
+  ],
+  "max_ground_difference_m": 4.011569672002224e-07,
+  "max_horizon_difference_deg": 0.008417001552986969,
+  "seconds": 15.816
+}

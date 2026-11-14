@@ -1,0 +1,13 @@
+{
+  "name": "Lunaris — lunar environment lab",
+  "image": "mcr.microsoft.com/devcontainers/python:3.11-bookworm",
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": { "version": "22" }
+  },
+  "postCreateCommand": "bash lunar-envelope/scripts/setup.sh",
+  "postStartCommand": "bash lunar-envelope/scripts/start-codespaces.sh",
+  "forwardPorts": [8000],
+  "portsAttributes": {
+    "8000": { "label": "Lunaris prototype", "onAutoForward": "openBrowser" }
+  }
+}

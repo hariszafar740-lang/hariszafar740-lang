@@ -7,6 +7,16 @@ I write the solvers, the tests that pin their numbers, and the pages that show t
 
 [Open the energy-transition workbench](https://hariszafar740-lang.github.io/energy-transition-model/workbench/) · [grid explorer](https://hariszafar740-lang.github.io/power-systems-newton-raphson-solver/) · [portfolio dashboard](https://hariszafar740-lang.github.io/ee-portfolio-master/)
 
+## NASA Space Apps Challenge concept
+
+[Lunaris — lunar environment lab](lunar-envelope/README.md) is an exploratory
+prototype built in preparation for a NASA Space Apps Challenge: it makes lunar
+environment assumptions visible to people thinking about surface operations
+and solar power. It is not an official NASA product, a validated mission model,
+or evidence of contest participation or a result. See the project page for
+[how recruiters can try it](lunar-envelope/README.md#try-the-prototype) and its
+[limitations and audit](lunar-envelope/AUDIT.md).
+
 ## Verified results
 
 | Repository | Verified result | Tests |
