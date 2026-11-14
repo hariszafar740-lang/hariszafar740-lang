@@ -1,6 +1,6 @@
-# Independent terrain and horizon review — request not yet sent
+# Independent terrain and horizon review — public request open
 
-**Status: no independent reviewer has been identified, contacted or accepted this phase.** This is a request template, not a review, endorsement or 10/10 score. Please identify an independent planetary topography, LOLA and illumination specialist and a contact method.
+**Status: a public request for an independent reviewer is open at [issue #4](https://github.com/hariszafar740-lang/hariszafar740-lang/issues/4). No individual expert has been identified or directly contacted, and no independent reviewer has agreed, reviewed, rated or accepted this phase.** This packet is not a review, endorsement or 10/10 score. Please identify an independent planetary topography, LOLA and illumination specialist and a contact method.
 
 ## Request to reviewer
 
@@ -13,6 +13,7 @@ Review `backend/terrain.py`, `backend/native_terrain.py`, `data/terrain/README.m
 
 ## Review record
 
+- Public request: [issue #4](https://github.com/hariszafar740-lang/hariszafar740-lang/issues/4) (open; no individual reviewer identified)
 - Reviewer, relevant expertise, affiliation, independence, conflicts and contact method: **not provided**
 - Findings, evidence and acceptance criteria: **not received**
 - Corrections and tests: **pending findings**
