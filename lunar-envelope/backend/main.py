@@ -7,10 +7,12 @@ from pathlib import Path
 from fastapi import FastAPI, Query
 from . import diviner
 from fastapi.responses import StreamingResponse, FileResponse
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import A4
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field, ConfigDict
 
-app = FastAPI(title='Lunar Envelope API', version='0.1.0')
+app = FastAPI(title='Lunar Envelope API', version='0.2.0')
 
 class Scenario(BaseModel):
     model_config = ConfigDict(allow_inf_nan=False, extra='forbid')
@@ -22,7 +24,7 @@ class Scenario(BaseModel):
     longitude: float = Field(default=0, ge=-180, le=180)
 
 
-def calculate(s: Scenario):
+def snapshot(s: Scenario):
     # Fixed equatorial subsolar latitude; phase 0 puts noon at longitude 0.
     subsolar_lon = (s.phase / 29.53 * 360 + 180) % 360 - 180
     cosz = math.cos(math.radians(s.latitude))*math.cos(math.radians(s.longitude-subsolar_lon))
@@ -60,7 +62,6 @@ def calculate(s: Scenario):
     dust_density = (0.003*s.meteor + 0.018*terminator*s.meteor*(s.wind/400))
     deposit = (0.00012*s.meteor + 0.00035*terminator*s.meteor*s.wind/400) # g/m²/day, scenario proxy
     # Beer-Lambert attenuation with assumed mass extinction [m²/g].
-    curve = [{'day': day, 'efficiency': round(100*math.exp(-0.8*deposit*day),3)} for day in range(31)]
     species = {'He':4.0026, 'Ar':39.948, 'Na':22.990, 'K':39.098}
     base = {'He':6000, 'Ar':4000, 'Na':80, 'K':15} # illustrative surface densities cm^-3
     gases = []
@@ -68,7 +69,36 @@ def calculate(s: Scenario):
         h = 1.380649e-23*temp/(mass*1.660539e-27*1.62)/1000
         gases.append({'species':name, 'scale_height_km':round(h,1), 'density_100km':round(base[name]*math.exp(-100/h),2)})
     risk = 'HIGH' if abs(potential) >= 25 or dust_density >= .03 else 'ELEVATED' if abs(potential) >= 12 or dust_density >= .012 else 'LOW'
-    return {'subsolar_longitude':round(subsolar_lon,2), 'zenith':round(zenith,1), 'temperature':round(temp,1), 'potential':round(potential,1), 'dust_density':round(dust_density,4), 'deposit_rate':round(deposit,6), 'loft_force_ratio':round(loft_ratio,4), 'loft_threshold_met':loft_ratio > 1, 'efficiency':curve[-1]['efficiency'], 'risk':risk, 'curve':curve, 'gases':gases, 'illuminated':cosz > 0}
+    return {'subsolar_longitude':round(subsolar_lon,2), 'zenith':round(zenith,1), 'temperature':round(temp,1), 'potential':round(potential,1), 'dust_density':round(dust_density,4), 'deposit_rate':round(deposit,6), 'loft_force_ratio':round(loft_ratio,4), 'loft_threshold_met':loft_ratio > 1, 'risk':risk, 'gases':gases, 'illuminated':cosz > 0}
+
+def calculate(s: Scenario):
+    """Scenario projection at 6-hour increments; screening only, not EVA safety."""
+    current = snapshot(s)
+    cumulative = 0.0
+    timeline = []
+    curve = [{'day': 0, 'efficiency': 100.0}]
+    for step in range(120):
+        day = step / 4
+        phase = (s.phase + day) % 29.53
+        tick = snapshot(s.model_copy(update={'phase': phase}))
+        timeline.append({'day': day, 'phase': round(phase, 3), 'risk': tick['risk'],
+                         'potential': tick['potential'], 'dust_density': tick['dust_density'],
+                         'deposit_rate': tick['deposit_rate'], 'illuminated': tick['illuminated']})
+        cumulative += tick['deposit_rate'] * 0.25
+        if (step + 1) % 4 == 0:
+            curve.append({'day': (step + 1)//4, 'efficiency': round(100*math.exp(-0.8*cumulative), 3)})
+    windows = []
+    for tick in timeline:
+        if tick['risk'] == 'LOW' and tick['illuminated']:
+            if windows and windows[-1]['end_day'] == tick['day']:
+                windows[-1]['end_day'] += 0.25
+            else:
+                windows.append({'start_day': tick['day'], 'end_day': tick['day']+0.25})
+    peak = max(timeline, key=lambda x: x['deposit_rate'])
+    current.update({'curve':curve, 'efficiency':curve[-1]['efficiency'], 'timeline':timeline,
+                    'screening_windows':windows, 'peak_deposition_day':peak['day'],
+                    'cumulative_deposition':round(cumulative, 6)})
+    return current
 
 @app.get('/api/health')
 def health(): return {'status':'ok'}
@@ -93,6 +123,72 @@ def diviner_nearest(latitude: float = Query(ge=-90, le=90, allow_inf_nan=False),
         return diviner.nearest(latitude, longitude)
     except (OSError, ValueError) as exc:
         return {'status':'unavailable', 'message':f'Diviner subset could not be loaded: {exc}'}
+
+@app.post('/api/diviner-comparison')
+def diviner_comparison(s: Scenario):
+    try:
+        observed = diviner.nearest(s.latitude, s.longitude)
+    except (OSError, ValueError) as exc:
+        return {'status':'unavailable','message':str(exc)}
+    if observed['status'] != 'available':
+        return observed
+    obs = observed['observation']
+    # Match the simplified model's local solar time; the historical average has
+    # a different season, topography and sampling. Not a rigorous validation.
+    subsolar_lon = obs['longitude'] - 15*(obs['local_time_h']-12)
+    phase = ((subsolar_lon % 360)/360)*29.53
+    model = snapshot(s.model_copy(update={'latitude':obs['latitude'], 'longitude':obs['longitude'], 'phase':phase}))
+    return {**observed, 'model_temperature_k':model['temperature'], 'matched_phase_day':round(phase,3),
+            'difference_k':round(model['temperature']-obs['temperature_k'],2),
+            'comparison_note':'Approximate local-time match only. Historical season, topography and averaging differ; not model validation.'}
+
+@app.post('/api/export-report.pdf')
+def export_pdf(s: Scenario):
+    result = calculate(s)
+    buf = io.BytesIO()
+    pdf = canvas.Canvas(buf, pagesize=A4)
+    width, height = A4
+    pdf.setTitle('Lunaris — illustrative mission brief')
+    pdf.setFillColorRGB(.05,.1,.15); pdf.rect(0,0,width,height,fill=1,stroke=0)
+    pdf.setFillColorRGB(.55,.9,.92); pdf.setFont('Helvetica-Bold',10); pdf.drawString(42,height-50,'LUNARIS  /  MISSION BRIEF')
+    pdf.setFillColorRGB(.92,.95,.96); pdf.setFont('Helvetica-Bold',20); pdf.drawString(42,height-83,'Exploratory scenario report')
+    pdf.setFont('Helvetica',9); pdf.setFillColorRGB(.95,.7,.4)
+    pdf.drawString(42,height-103,'NOT FLIGHT-QUALIFIED. NOT A SAFE-EVA ASSESSMENT.')
+    y=height-140
+    lines=[('Site',f'{s.latitude:.1f} deg latitude / {s.longitude:.1f} deg longitude'),
+           ('Scenario',f'Phase {s.phase:.1f} d; wind {s.wind:.0f} km/s; UV {s.uv:.1f}x; meteoroids {s.meteor:.1f}x'),
+           ('Solar zenith / thermal proxy',f"{result['zenith']} deg / {result['temperature']} K"),
+           ('Surface potential proxy',f"{result['potential']} V"),
+           ('Dust density proxy',f"{result['dust_density']} particles/cm3"),
+           ('30-day projected power retained',f"{result['efficiency']} %"),
+           ('Peak deposition proxy',f"day {result['peak_deposition_day']:.2f}"),
+           ('Screening windows',f"{len(result['screening_windows'])} candidate intervals; not operational windows")]
+    for label,value in lines:
+        pdf.setFillColorRGB(.62,.71,.75);pdf.setFont('Helvetica',9);pdf.drawString(42,y,label)
+        pdf.setFillColorRGB(.92,.96,.97);pdf.setFont('Helvetica-Bold',10);pdf.drawString(245,y,value);y-=28
+    windows=result['screening_windows']
+    if windows:
+        pdf.setFillColorRGB(.62,.71,.75);pdf.setFont('Helvetica',9)
+        pdf.drawString(42,y,'Candidate intervals (days)')
+        pdf.setFillColorRGB(.92,.96,.97);pdf.setFont('Helvetica-Bold',9)
+        listed=', '.join(f"{w['start_day']:.2f}-{w['end_day']:.2f}" for w in windows[:4])
+        if len(windows)>4: listed += ' (see CSV for all)'
+        pdf.drawString(245,y,listed);y-=28
+    y-=8;pdf.setFillColorRGB(.55,.9,.92);pdf.setFont('Helvetica-Bold',10);pdf.drawString(42,y,'OBSERVATIONS AND LIMITATIONS');y-=22
+    try:
+        obs=diviner.nearest(s.latitude,s.longitude)
+        if obs['status']=='available':
+            o=obs['observation']; note=f"Historic Diviner bin: {o['temperature_k']:.2f} K, {obs['nearest_distance_km']:.2f} km away."
+        else: note='No bundled Diviner bin is within 2 km of this site.'
+    except (OSError,ValueError): note='Diviner subset unavailable.'
+    pdf.setFillColorRGB(.8,.86,.88);pdf.setFont('Helvetica',9)
+    for line in [note,'Observation and model are not matched in season or terrain.',
+                 'Dust, charging, hazard thresholds and power loss are unvalidated proxies.',
+                 'Do not use this brief to plan a mission or EVA.',
+                 'Data source: NASA PDS LRO Diviner, through a pinned third-party subset.']:
+        pdf.drawString(42,y,line);y-=17
+    pdf.showPage();pdf.save();buf.seek(0)
+    return StreamingResponse(buf,media_type='application/pdf',headers={'Content-Disposition':'attachment; filename="lunar-mission-brief.pdf"'})
 
 @app.post('/api/export-report')
 def export_report(s: Scenario):
@@ -120,11 +216,19 @@ def export_report(s: Scenario):
         w.writerow(['Diviner reference unavailable', '', ''])
     w.writerow([]); w.writerow(['Day','Power retained (%)'])
     for point in r['curve']: w.writerow([point['day'],point['efficiency']])
+    w.writerow([]); w.writerow(['Illustrative screening windows — NOT safe EVA windows'])
+    w.writerow(['Start day','End day'])
+    for window in r['screening_windows']: w.writerow([window['start_day'],window['end_day']])
+    w.writerow([]); w.writerow(['Day','Phase (days)','Risk proxy','Illuminated','Dust proxy (particles/cm³)','Deposition proxy (g/m²/day)'])
+    for point in r['timeline']:
+        w.writerow([point['day'],point['phase'],point['risk'],point['illuminated'],point['dust_density'],point['deposit_rate']])
     out.seek(0)
     return StreamingResponse(iter([out.getvalue().encode('utf-8-sig')]),media_type='text/csv',headers={'Content-Disposition':'attachment; filename="lunar-mission-brief.csv"'})
 
 static = Path(__file__).resolve().parent.parent/'frontend'/'dist'
 if static.exists():
     app.mount('/assets', StaticFiles(directory=static/'assets'), name='assets')
+    @app.get('/favicon.svg')
+    def favicon(): return FileResponse(static/'favicon.svg', media_type='image/svg+xml')
     @app.get('/')
     def index(): return FileResponse(static/'index.html')
