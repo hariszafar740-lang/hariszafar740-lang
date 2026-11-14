@@ -159,3 +159,50 @@ def test_horizons_reference_reproduction_and_direct_topocentric_vectors(tmp_path
         for i,key in enumerate(('x_km','y_km','z_km')):
             calculated=float(b[key])+math.cos(phi)*v['X'][i]+math.sin(phi)*v['Z'][i]
             assert calculated==pytest.approx(float(row[key]),abs=1e-6)
+
+@pytest.mark.parametrize('row',list(csv.DictReader((Path(__file__).parent/'horizons_broad_reference.csv').open())))
+def test_broader_horizons_independent_orientation(row):
+    ds=ephemeris.select(ephemeris.EXTENDED_START,ephemeris.EXTENDED_END)
+    at=datetime.fromisoformat(row['utc'].replace('Z','+00:00'))
+    got=ds.at(at,float(row['latitude']),float(row['longitude']),float(row['height_m']))[row['body'].lower()]
+    assert got['elevation_deg']==pytest.approx(float(row['elevation_deg']),abs=.001)
+    assert abs((got['azimuth_deg']-float(row['azimuth_deg'])+180)%360-180)<.002
+    assert got['distance_km']==pytest.approx(float(row['distance_km']),abs=15 if row['body']=='SUN' else 1.2)
+
+def test_broader_horizons_reference_reproduces(tmp_path):
+    import subprocess,sys
+    folder=Path(__file__).parent
+    generated=tmp_path/'reference.csv'
+    subprocess.run([sys.executable,str(folder.parent/'scripts/generate_horizons_axes_reference.py'),str(folder/'horizons_broad_axes.csv'),str(folder/'horizons_broad_targets.csv'),str(generated)],check=True)
+    with generated.open(newline='',encoding='ascii') as f, (folder/'horizons_broad_reference.csv').open(newline='',encoding='ascii') as g:
+        a=list(csv.DictReader(f));b=list(csv.DictReader(g))
+    assert len(a)==len(b)==120
+    for x,y in zip(a,b):
+        for key in ('utc','latitude','longitude','height_m','body'):assert x[key]==y[key]
+        for key in ('azimuth_deg','elevation_deg'):assert float(x[key])==pytest.approx(float(y[key]),abs=1e-9,rel=0)
+        assert float(x['distance_km'])==pytest.approx(float(y['distance_km']),abs=1e-6,rel=0)
+
+def test_horizons_crossing_brackets_reproduce(tmp_path):
+    import subprocess,sys
+    folder=Path(__file__).parent
+    result=subprocess.run([sys.executable,str(folder.parent/'scripts/report_horizons_crossings.py')],check=True,text=True,capture_output=True)
+    actual=list(csv.DictReader(result.stdout.splitlines()))
+    with (folder/'horizons_crossing_differences.csv').open(newline='',encoding='ascii') as f: archived=list(csv.DictReader(f))
+    assert len(actual)==len(archived)==8
+    for x,y in zip(actual,archived):
+        for k in ('start','latitude','longitude','body','kind','sample_before_utc','sample_after_utc','app_utc'):assert x[k]==y[k]
+        for k in ('before_elevation_deg','after_elevation_deg'):assert float(x[k])==pytest.approx(float(y[k]),abs=1e-9,rel=0)
+        assert float(x['app_minus_horizons_s'])==pytest.approx(float(y['app_minus_horizons_s']),abs=.01,rel=0)
+        assert abs(float(x['app_minus_horizons_s']))<30
+
+def test_broader_horizons_differences_reproduce():
+    import subprocess,sys
+    folder=Path(__file__).parent
+    result=subprocess.run([sys.executable,str(folder.parent/'scripts/report_geometry_differences.py')],check=True,text=True,capture_output=True)
+    actual=list(csv.DictReader(result.stdout.splitlines()))
+    with (folder/'horizons_broad_differences.csv').open(newline='',encoding='ascii') as f:archived=list(csv.DictReader(f))
+    assert len(actual)==len(archived)==120
+    for x,y in zip(actual,archived):
+        for k in ('utc','latitude','longitude','height_m','body','reference_elevation_deg'):assert x[k]==y[k]
+        for k in ('delta_elevation_deg','delta_azimuth_deg'):assert float(x[k])==pytest.approx(float(y[k]),abs=1e-9,rel=0)
+        assert float(x['delta_distance_km'])==pytest.approx(float(y['delta_distance_km']),abs=1e-6,rel=0)

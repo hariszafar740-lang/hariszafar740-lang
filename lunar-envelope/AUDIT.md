@@ -81,3 +81,11 @@ Test evidence: 37 lunar backend tests, production TypeScript/Vite build, desktop
 ## Explicit verification boundaries
 
 `lunar-envelope/README.md` contains repeatable commands and the data folder contains source links and hashes. Package scans and test results are snapshots, not future guarantees. The linked GitHub Actions run passed, but future runs and Codespaces, Windows/macOS native workflows, Docker hosting and a public demo must each be checked in their target environment. This self-audit is not a substitute for independent scientific, security, accessibility or operations review.
+
+## 2026-11-14: Further selected external checks
+
+An independently retrieved NAIF DE421 kernel has a different SHA-256 and is 2,048 bytes longer than the pinned mirror; the three other source kernels match NAIF by SHA-256. The official NAIF DE421 MD5 agrees with the retrieved file. No production data was regenerated. See `data/ephemeris/README.md` for provenance and comparison limits.
+
+The additional ten Horizons dates × six site/heights × two bodies give 120 more point comparisons, including 25 within 2° of the tangent plane. Eight previously selected crossings are independently bracketed using Horizons site vectors; the largest selected app-versus-linearly-interpolated-reference difference is 17.815 s. Inputs, requested URLs, numerical differences and reproducible scripts are checked in. These are selected observations, not global bounds; the fixed event scan can still miss short or grazing events.
+
+No expert has yet been identified, contacted or accepted the work; the unsent request and outstanding review record are in `INDEPENDENT_GEOMETRY_REVIEW.md`. Step 1 remains **incomplete**. Phase 2 terrain/horizons also remains incomplete and independently unaudited. No independent 10/10 is claimed.
