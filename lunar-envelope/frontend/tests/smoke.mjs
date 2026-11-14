@@ -20,6 +20,9 @@ try {
   assert.equal(terrainData.horizon_deg.length,360);
   assert.equal(terrainData.observer_height_m,2);
   assert.equal(terrainData.max_distance_km,300);
+  assert.equal(terrainData.sensitivity_offset_deg,1);
+  assert.equal(terrainData.peak_distance_km.length,360);
+  assert.match(await page.locator('.terrain-result').innerText(),/not a measured uncertainty/);
   await page.getByRole('spinbutton',{name:'Observer height above terrain in meters'}).fill('10');
   await page.getByText('Terrain inputs changed.',{exact:false}).waitFor();
   await page.getByRole('button',{name:'PIN CURRENT AS BASELINE'}).click();

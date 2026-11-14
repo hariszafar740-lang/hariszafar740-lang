@@ -52,7 +52,7 @@ def test_api_sample_and_bounds():
     assert d['min_distance_m']==600 and d['max_distance_km']==300 and len(d['coverage_km'])==len(d['peak_distance_km'])==360
     assert all(.6<=peak<=end<=300 for peak,end in zip(d['peak_distance_km'],d['coverage_km']))
     assert d['edge_truncated_azimuths']==sum(v<300 for v in d['coverage_km'])
-    assert d['sensitivity_offset_deg']==.25 and 'not a terrain-error' in d['assumptions']['sensitivity']
+    assert d['sensitivity_offset_deg']==1.0 and 'not a terrain-error' in d['assumptions']['sensitivity']
     for body in ('sun','earth'):
         assert d[body+'_sensitive_hours']==sum(s[body+'_sensitivity']=='changes' for s in d['samples'])
         for s in d['samples']:
@@ -76,12 +76,12 @@ def test_missing_or_modified_dem_fails_closed(monkeypatch,tmp_path):
     terrain.load_grid.cache_clear();terrain.horizon.cache_clear()
 
 @pytest.mark.parametrize('margin,expected',[
-    (-.251,'unchanged'),(-.25,'unchanged'),(-.249,'changes'),(0,'changes'),
-    (.25,'changes'),(.251,'unchanged')])
+    (-1.001,'unchanged'),(-1.,'unchanged'),(-.999,'changes'),(0,'changes'),
+    (1.,'changes'),(1.001,'unchanged')])
 def test_illustrative_sensitivity_boundaries(margin,expected):
     # Strictly above both perturbed horizons; this band is not an uncertainty bound.
     assert terrain.sensitivity(margin)==expected
-    assert ((margin > -.25) != (margin > .25)) == (expected=='changes')
+    assert ((margin > -1.) != (margin > 1.)) == (expected=='changes')
 
 
 def test_unknown_azimuth_is_not_counted(monkeypatch):
@@ -96,3 +96,60 @@ def test_unknown_azimuth_is_not_counted(monkeypatch):
     assert d['unknown_hours']==24 and d['sun_above_sampled_hours']==0 and d['both_above_sampled_hours']==0
     assert d['earth_above_sampled_hours']==24 and d['sun_sensitive_hours']==0
     assert d['samples'][0]['sun_sensitivity'] is None and d['samples'][0]['sun_neighbor_coverage_min_km'] is None
+
+
+def test_native_pds_horizon_comparison_reproduces_coarse_values():
+    # PDS reference uses original 80/120 m rasters and 40 m steps; no data
+    # downloads are required to check these archived selected comparisons.
+    import csv
+    rows=list(csv.DictReader((Path(__file__).parent/'pds_native_horizon_comparison.csv').open()))
+    assert len(rows)==33
+    for row in rows:
+        ground,profile,_,_=terrain.horizon(float(row['latitude']),float(row['longitude']),float(row['height_above_ground_m']))
+        model=terrain.horizon_at(profile,float(row['azimuth_deg']))
+        assert ground==pytest.approx(float(row['coarse_ground_m']),abs=1e-5,rel=0)
+        assert model==pytest.approx(float(row['coarse_horizon_deg']),abs=1e-6,rel=0)
+        assert model-float(row['native_horizon_deg'])==pytest.approx(float(row['coarse_minus_native_deg']),abs=1e-6,rel=0)
+    # Deliberately retain a regression case showing a material limitation.
+    assert max(abs(float(r['coarse_minus_native_deg'])) for r in rows) > .8
+
+def test_native_raster_bilinear_and_fill_handling(tmp_path):
+    import hashlib,struct
+    from backend import native_terrain
+    values=[0,2,4,6,8,10,12,14,16]
+    blob=struct.pack('<9h',*values);path=tmp_path/'grid.img';path.write_bytes(blob)
+    r=native_terrain.Raster(path,hashlib.sha256(blob).hexdigest(),3,100)
+    assert r.sample(0,0)==pytest.approx(4)
+    assert r.sample(50,50)==pytest.approx(3)
+    assert r.sample(1e9,0) is None
+    path.write_bytes(b'bad')
+    assert r.sample(0,0)==pytest.approx(4) # verified immutable bytes, not an mmap
+    with pytest.raises(ValueError):native_terrain.Raster(path,hashlib.sha256(blob).hexdigest(),3,100)
+    values[4]=-32768;blob=struct.pack('<9h',*values);path.write_bytes(blob)
+    r=native_terrain.Raster(path,hashlib.sha256(blob).hexdigest(),3,100)
+    with pytest.raises(terrain.TerrainUnavailable):r.sample(0,0)
+
+
+def test_native_unavailable_fails_closed(monkeypatch,tmp_path):
+    from backend import native_terrain
+    native_terrain.load_rasters.cache_clear();terrain.native_horizon.cache_clear()
+    monkeypatch.setenv('LUNARIS_NATIVE_DEM_DIR',str(tmp_path))
+    result=client.post('/api/terrain-screen',json={**BASE,'terrain_resolution':'native'})
+    assert result.status_code==503 and 'rasters' in result.json()['detail']
+    assert client.post('/api/terrain-screen',json={**BASE,'terrain_resolution':'invalid'}).status_code==422
+    native_terrain.load_rasters.cache_clear();terrain.native_horizon.cache_clear()
+
+
+def test_native_mode_api_metadata_with_synthetic_raster(monkeypatch):
+    from backend import native_terrain
+    class Data:
+        digest='test';kind='test'
+        def at(self,*args):return {b:{'azimuth_defined':True,'elevation_deg':1,'azimuth_deg':45} for b in ('sun','earth')}
+    monkeypatch.setattr(terrain.ephemeris,'select',lambda *args:Data())
+    monkeypatch.setattr(terrain,'native_horizon',lambda *args:(0,(0,)*360,(300,)*360,(1,)*360))
+    result=client.post('/api/terrain-screen',json={**BASE,'terrain_resolution':'native'})
+    assert result.status_code==200
+    d=result.json()
+    assert d['terrain_resolution']=='native' and d['radial_step_m']==40 and d['terrain_sha256'] is None
+    assert d['terrain_source_sha256']=={name:spec[0] for name,spec in native_terrain.SOURCES.items()}
+    assert '80/120 m' in d['assumptions']['height'] and d['sun_above_sampled_hours']==24

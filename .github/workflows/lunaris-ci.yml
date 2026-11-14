@@ -72,7 +72,7 @@ jobs:
         run: npm ci --prefix frontend && npm run build --prefix frontend
       - name: Run API and model checks on Python 3.14
         run: python -m pytest -q tests
-  pds-source-comparison:
+  pds-native-check:
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -81,17 +81,13 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Download NASA PDS originals and compare
+      - name: Retrieve and compare original LOLA products
         shell: bash
         run: |
           set -euo pipefail
-          trap 'echo "::error title=PDS comparison failed::command failed on line $LINENO"' ERR
-          mkdir -p "$RUNNER_TEMP/pds"
           base=https://pds-geosciences.wustl.edu/lro/lro-l-lola-3-rdr-v1/lrolol_1xxx/data/lola_gdr/polar/img
+          mkdir -p "$RUNNER_TEMP/pds"
           for f in ldem_80s_80m.img ldem_75s_120m.img; do curl -fLsS --retry 2 --connect-timeout 30 --max-time 300 "$base/$f" -o "$RUNNER_TEMP/pds/$f"; done
-          python -m pip install numpy==2.3.5
-          result=$(python lunar-envelope/scripts/validate_terrain_sources.py "$RUNNER_TEMP/pds")
-          echo "::notice title=PDS comparison::$result"
-          python lunar-envelope/scripts/compare_terrain_high_resolution.py "$RUNNER_TEMP/pds" "$RUNNER_TEMP/terrain.csv"
-          payload=$(gzip -c "$RUNNER_TEMP/terrain.csv" | base64 -w0)
-          echo "::notice title=PDS rays::$payload"
+          result=$(LUNARIS_NATIVE_DEM_DIR="$RUNNER_TEMP/pds" python lunar-envelope/scripts/check_native_horizon_regression.py)
+          payload=$(printf '%s' "$result" | gzip -c | base64 -w0)
+          echo "::notice title=Native comparison::$payload"

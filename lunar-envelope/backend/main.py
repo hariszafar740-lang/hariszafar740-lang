@@ -126,6 +126,7 @@ class TerrainRequest(BaseModel):
     latitude: float=Field(ge=-90,le=-80)
     longitude: float=Field(ge=-180,le=180)
     observer_height_m: float=Field(default=2,ge=0,le=1000)
+    terrain_resolution: Literal['coarse','native']='coarse'
     @field_validator('start')
     @classmethod
     def utc_time(cls,value):
