@@ -93,16 +93,15 @@ jobs:
               echo "::warning title=NAIF source unavailable::Could not download $base/$spec"
             fi
           done
-      - uses: actions/upload-artifact@v4
-        with:
-          name: naif-originals
-          path: |
-            ${{ runner.temp }}/de421.bsp
-            ${{ runner.temp }}/moon_pa_de421_1900-2050.bpc
-            ${{ runner.temp }}/moon_080317.tf
-            ${{ runner.temp }}/naif0012.tls
-          retention-days: 1
-          if-no-files-found: error
+      - uses: actions/checkout@v4
+      - name: Compare verified source and mirror
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install 'spiceypy==7.0.0'
+          curl --fail --silent --show-error --location --retry 2 --max-time 90 https://raw.githubusercontent.com/skyfielders/python-skyfield/31a6ed7584cd09b6e48e07546a4b5921e1cd5bb4/ci/de421.bsp -o "$RUNNER_TEMP/mirror.bsp"
+          result=$(python lunar-envelope/scripts/check_naif_vectors.py "$RUNNER_TEMP" "$RUNNER_TEMP/mirror.bsp")
+          echo "::notice title=NAIF vector comparison::$result"
   horizons-retrieval:
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
@@ -111,9 +110,9 @@ jobs:
       - uses: actions/checkout@v4
       - name: Fetch selected Horizons vectors
         run: python lunar-envelope/scripts/fetch_horizons_validation.py "$RUNNER_TEMP/horizons"
-      - uses: actions/upload-artifact@v4
-        with:
-          name: horizons-validation
-          path: ${{ runner.temp }}/horizons/
-          retention-days: 1
-          if-no-files-found: error
+      - name: Report source vectors
+        run: |
+          for file in axes.csv targets.csv; do
+            payload=$(gzip -c "$RUNNER_TEMP/horizons/$file" | base64 -w0)
+            echo "::notice title=$file::$payload"
+          done
