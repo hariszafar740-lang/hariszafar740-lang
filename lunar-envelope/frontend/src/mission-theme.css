@@ -1,0 +1,220 @@
+/* Lunar Mission Control: presentation only; scientific semantics stay unchanged. */
+:root {
+  --mission-bg: #0c1724;
+  --mission-panel: #122332;
+  --mission-panel-deep: #101e2b;
+  --mission-border: #46606d;
+  --mission-text: #eaf2f5;
+  --mission-muted: #afc2cc;
+  --mission-earth: #79d6e4;
+  --mission-sun: #f4c27d;
+  --mission-action: #9ae4e8;
+  --mission-action-text: #102a30;
+}
+
+.navigator, .app {
+  background: var(--mission-bg);
+  color: var(--mission-text);
+}
+
+.nav-header, .topbar, .nav-footer {
+  background: #101e2b;
+  border-color: #334b59;
+}
+
+.nav-sidebar, .left-panel, .right-panel {
+  background: #101e2b;
+  border-color: #334b59;
+}
+
+.nav-brand strong, .brand strong, .nav-heading h1, .workspace-heading h1,
+.nav-side-title h2, .nav-section-heading h2, .inspector-header h2 {
+  color: var(--mission-text);
+}
+
+.nav-heading h1, .workspace-heading h1 { letter-spacing: -.035em; }
+
+.nav-heading p, .nav-side-title p, .workspace-heading p, .panel-intro p,
+.inspector-header p {
+  color: var(--mission-muted);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.nav-label, .eyebrow, .nav-brand strong span, .brand strong span,
+.nav-heading h1 span, .nav-section-heading h2 span {
+  color: var(--mission-earth);
+}
+
+.nav-field, .nav-coordinates label, .height-input, .coordinate-inputs label,
+.metric-label-small, .timeline-label span {
+  color: var(--mission-muted);
+}
+
+.nav-field { font-size: 10px; }
+
+.nav-coordinates label, .height-input, .coordinate-inputs label {
+  font-size: 10px;
+}
+
+.nav-input, .site-input, .nav-coordinates input, .height-input input,
+.coordinate-inputs input {
+  background: var(--mission-panel);
+  border-color: var(--mission-border);
+  color: var(--mission-text);
+}
+
+.nav-input input, .nav-input select, .nav-coordinates input,
+.height-input input, .coordinate-inputs input {
+  color: var(--mission-text);
+  font-size: 12px;
+}
+
+.nav-hero {
+  background: radial-gradient(ellipse at 55% 40%, #1b3442, #122332 70%);
+  border-color: var(--mission-border);
+  border-radius: 10px;
+}
+
+.compare-card, .timeline-card, .nav-details, .explore-card, .summary-card,
+.data-card, .plan-card, .metric, .power-card, .observation-card, .gas-details {
+  background: var(--mission-panel);
+  border-color: #405966;
+  border-radius: 8px;
+}
+
+.terrain-card, .model-boundaries {
+  border-color: #526d78;
+  border-radius: 8px;
+}
+
+.nav-metric strong, .hero-values b, .metric-value, .observation-value {
+  color: var(--mission-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.nav-metric p, .power-note, .hero-copy p, .nav-details p, .explore-card p,
+.result-provenance, .timeline-caution, .model-disclaimer {
+  color: var(--mission-muted);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.hero-copy p { max-width: 280px; }
+.compare-title b, .timeline-label b { font-size: 13px; }
+.metric-label-small { font-size: 10px; }
+.metric-grid { gap: 3px; }
+
+.metric-light.gold, .key-sun, .sun-up {
+  background-color: var(--mission-sun);
+}
+
+.metric-light.blue, .key-earth, .earth-up {
+  background-color: var(--mission-earth);
+}
+
+.run-plan, .example-action button, .export {
+  background: var(--mission-action);
+  color: var(--mission-action-text);
+  border-color: var(--mission-action);
+}
+
+.run-plan:hover, .example-action button:hover, .export:hover {
+  background: #c5f4f3;
+  color: #102a30;
+}
+
+.pdf-button {
+  background: transparent;
+  color: #b9edf0;
+  border-color: #73939b;
+}
+
+.pdf-button:hover {
+  background: #254451;
+  color: #fff;
+}
+
+.nav-header-actions .legacy-button, .tour-button, .explore-card button,
+.site-add, .site-remove {
+  border-color: #607d88;
+  color: #cff2f4;
+}
+
+.draft-notice, .terrain-warning {
+  background: #352d1a;
+  border-color: #a9854b;
+  color: #ffe6b7;
+}
+
+.nav-error {
+  background: #3a2426;
+  border-color: #bd7775;
+  color: #ffe0dd;
+}
+
+.nav-disclaimer {
+  color: #bccdd1;
+  font-size: 11px;
+}
+
+.navigator :is(button, a, input, select, summary):focus-visible,
+.app :is(button, a, input, select, summary):focus-visible {
+  outline: 3px solid #c7fbff;
+  outline-offset: 3px;
+}
+
+@media (max-width: 700px) {
+  .nav-heading p, .workspace-heading p { font-size: 12px; }
+  .nav-coordinates label, .height-input { font-size: 9px; }
+  .compare-title small { font-size: 9px; }
+  .nav-metric strong { font-size: 20px; }
+}
+
+@media print {
+  .navigator, .app, .compare-card, .timeline-card, .explore-card {
+    background: #fff !important;
+    color: #000 !important;
+  }
+
+  .navigator p, .navigator span, .navigator b, .navigator strong,
+  .navigator h1, .navigator h2, .navigator h3, .navigator td, .navigator th {
+    color: #000 !important;
+  }
+}
+
+/* Patterns supplement color; text labels remain the primary key. */
+.tl-bars .down {
+  background-color: #273c48;
+  background-image: repeating-linear-gradient(
+    135deg,
+    transparent 0 3px,
+    #92aab2 3px 5px
+  );
+}
+
+.tl-bars .terrain-unknown {
+  background-color: #8062a3;
+  background-image:
+    repeating-linear-gradient(
+      45deg,
+      transparent 0 3px,
+      #ede5f7 3px 4px
+    ),
+    repeating-linear-gradient(
+      135deg,
+      transparent 0 3px,
+      #ede5f7 3px 4px
+    );
+}
+
+.timeline-pattern-note {
+  font-size: 11px !important;
+  line-height: 1.5;
+  color: #cbdade !important;
+  margin: 12px 0 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .navigator *, .app * { scroll-behavior: auto !important; }
+}

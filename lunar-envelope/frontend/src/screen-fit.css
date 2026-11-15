@@ -1,0 +1,19 @@
+/* Desktop workstation: independently scrollable panels preserve access to all content. */
+@media (min-width:1101px) and (min-height:600px) {
+ .app,.navigator{height:100dvh;min-height:0;overflow:hidden;display:flex;flex-direction:column}
+ .app>.topbar,.navigator>.nav-header{height:72px;min-height:72px;flex:none}
+ .layout,.nav-layout{min-height:0;height:auto;flex:1;overflow:hidden}
+ .left-panel,.right-panel,.center,.nav-sidebar,.nav-main{min-height:0;overflow:auto;overscroll-behavior:contain}
+ .center,.nav-main{display:flex;flex-direction:column;padding:18px 24px 30px}
+ .center .workspace-heading{order:-3}.center .viewport{order:-2}.center .replay{order:-1}
+ .workspace-heading{padding:10px 16px;margin-bottom:12px}.workspace-heading h1{font-size:27px;margin:5px 0}.workspace-heading p{font-size:13px}
+ .globe-wrap{height:clamp(225px,34vh,380px)}
+ .viewport-top,.viewport-bottom{min-height:38px;padding:8px 14px}.center .replay{margin-top:12px;padding:10px 14px}
+ .center .replay p{margin:3px 0 5px}.center .replay-controls{margin-top:6px}.center .replay h2{font-size:15px}
+ .nav-main .polar-workspace{order:-2}.nav-main .replay{order:-1}.nav-main .polar-workspace{padding:14px 16px}
+ .polar-title h2{font-size:20px;margin:4px 0}.polar-title p{margin:3px 0 8px}.polar-grid{gap:16px}
+ .polar-canvas{width:auto;max-width:100%;height:min(45vh,400px);max-height:400px}.terrain-3d{height:min(45vh,400px)}
+ .nav-footer{flex:none}
+}
+@media print{.app,.navigator{height:auto!important;overflow:visible!important;display:block!important}.layout,.nav-layout,.left-panel,.right-panel,.center,.nav-sidebar,.nav-main{height:auto!important;overflow:visible!important;display:block!important}}
+@media (min-width:1101px) and (min-height:600px){.nav-main>* ,.center>*{flex-shrink:0}}

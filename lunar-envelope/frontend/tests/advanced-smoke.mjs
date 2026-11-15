@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import {chromium} from 'playwright-core';
+const browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH,headless:true,args:['--no-sandbox','--enable-unsafe-swiftshader']});
+const page=await browser.newPage({viewport:{width:1366,height:768}});const errors=[];page.on('pageerror',e=>errors.push(e.message));
+try{
+ await page.goto(process.env.BASE_URL||'http://127.0.0.1:18003/',{waitUntil:'networkidle',timeout:60000});
+ const map=page.getByRole('region',{name:'Explore the surface'});await map.getByRole('button',{name:'3D terrain'}).click();await page.locator('.terrain-3d canvas').waitFor({timeout:30000});
+ const canvas=page.locator('.terrain-3d canvas'),box=await canvas.boundingBox();assert.ok(box.height>100&&box.width>100);await page.mouse.move(box.x+box.width/2,box.y+box.height/2);await page.mouse.down();await page.mouse.move(box.x+box.width/2+40,box.y+box.height/2+20);await page.mouse.up();await page.mouse.wheel(0,-100);await page.getByLabel('Terrain vertical exaggeration').selectOption('4');await map.getByRole('button',{name:'2D map'}).click();await map.locator('canvas.polar-canvas').waitFor();
+ for(const [w,h] of [[1920,1080],[1600,900],[1366,768],[1280,720]]){await page.setViewportSize({width:w,height:h});assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,`${w} horizontal`);assert.equal(await page.evaluate(()=>document.documentElement.scrollHeight<=innerHeight),true,`${w} vertical`);}
+ await page.getByRole('button',{name:'EXOSPHERE LAB'}).click();for(const [w,h] of [[1920,1080],[1600,900],[1366,768],[1280,720]]){await page.setViewportSize({width:w,height:h});assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,`lab ${w} horizontal`);assert.equal(await page.evaluate(()=>document.documentElement.scrollHeight<=innerHeight),true,`lab ${w} vertical`);}
+ const section=page.getByRole('region',{name:'Explore sensitivity'});await section.getByRole('button',{name:'Run sweep'}).click();await section.getByText('Complete',{exact:true}).waitFor({timeout:60000});await section.locator('summary').filter({hasText:'Show numerical samples'}).click();assert.equal(await section.locator('tbody tr').count(),9);await section.getByLabel('Sweep output').selectOption('temperature');
+ await page.setViewportSize({width:390,height:844});assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);assert.deepEqual(errors,[]);console.log('3D terrain, sweep and desktop viewport checks passed.');
+}finally{await browser.close()}

@@ -17,6 +17,12 @@ from datetime import datetime, timezone
 from typing import Literal
 
 app = FastAPI(title='Lunar Envelope API', version='0.2.0')
+from .surface_map import router as surface_map_router
+app.include_router(surface_map_router)
+from .ballistic import router as ballistic_router
+app.include_router(ballistic_router)
+from .terrain_physics import router as terrain_physics_router
+app.include_router(terrain_physics_router)
 
 class Scenario(BaseModel):
     model_config = ConfigDict(allow_inf_nan=False, extra='forbid')

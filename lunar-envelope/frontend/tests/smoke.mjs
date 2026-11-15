@@ -15,6 +15,7 @@ try {
   await page.keyboard.press('Enter');
   assert.equal(await page.locator(':focus').getAttribute('id'),'nav-main');
   await page.getByText('LOCAL SKY GEOMETRY').waitFor();
+  assert.equal(await page.locator('.navigator').evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(8, 13, 28)');
   await page.getByRole('heading',{name:'One Moon. Different horizons.'}).waitFor();
   await page.getByRole('spinbutton',{name:'Duration in days'}).fill('3');
   await page.getByRole('button',{name:'RUN EXAMPLE COMPARISON'}).click();
@@ -32,8 +33,35 @@ try {
   assert.match(await provenanceResponse.text(),/Lunar geometry data, provenance and validation/);
   assert.match(await page.locator('.nav-footer').innerText(),/HARIS ZAFAR/);
   assert.equal(await page.locator('.compare-card').count(),2);
+  const contrast=await page.evaluate(()=>{
+    const color=s=>s.match(/[\d.]+/g).slice(0,3).map(Number)
+      .map(v=>v/255)
+      .map(v=>v<=.04045?v/12.92:((v+.055)/1.055)**2.4);
+    const lum=s=>{
+      const v=color(s);
+      return .2126*v[0]+.7152*v[1]+.0722*v[2];
+    };
+    const check=(fg,bg)=>{
+      const a=lum(getComputedStyle(document.querySelector(fg)).color);
+      const b=lum(getComputedStyle(document.querySelector(bg)).backgroundColor);
+      return (Math.max(a,b)+.05)/(Math.min(a,b)+.05);
+    };
+    return [
+      check('.nav-metric strong','.compare-card'),
+      check('.run-plan','.run-plan')
+    ];
+  });
+  assert.ok(
+    contrast.every(value=>value>=4.5),
+    `Rendered text contrast failed: ${contrast}`
+  );
+  await page.getByText(
+    'Timeline key: solid bright segments',
+    {exact:false}
+  ).first().waitFor();
   await page.getByRole('button',{name:'SAMPLE SITE A TERRAIN'}).click();
   await page.getByText('Sun above sampled:',{exact:false}).waitFor({timeout:30000});
+  await page.getByText('crosshatching means unknown azimuth',{exact:false}).waitFor();
   assert.match(await page.locator('.terrain-result').innerText(),/not confirmed visibility/);
   const [terrainJson]=await Promise.all([page.waitForEvent('download'),page.getByRole('button',{name:'DOWNLOAD TERRAIN JSON'}).click()]);
   const terrainData=JSON.parse(await (await import('node:fs/promises')).readFile(await terrainJson.path(),'utf8'));

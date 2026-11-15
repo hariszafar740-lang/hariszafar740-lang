@@ -1,0 +1,9 @@
+# South-polar surface explorer
+
+The map displays a downsampled overview of the checksum-verified, MIT-licensed third-party 400 m LOLA-derived grid described in `data/terrain/README.md`. The backend samples that grid bilinearly; the overview is sampled to 160 × 160, not an independent measurement and not the original NASA raster. Heights are in metres above a 1,737.4 km reference sphere. The map covers 80–90° S, uses the project's south-polar stereographic projection, east-positive longitude, 0°E up and 90°E right. The pixel map is not a full-resolution terrain product. No global DEM, live illumination, slope, error estimate or valid landing zone is inferred.
+
+The route is a chain of shortest great-circle arcs on a 1,737.4 km sphere, not a spacecraft trajectory or feasible rover route. The profile samples approximately every 5 km, using bilinear interpolation of the 400 m grid. It can miss hazards at every scale; no navigation or mission use. It does not follow terrain distance or assess slope. Marker application updates draft comparison inputs; re-run comparison to update calculated results.
+
+The Exosphere trend plots the existing backend 6-hour model snapshots. A baseline is a saved output and input snapshot in browser memory, not a new model. Series use relative days from their respective initial phases. The profile cursor reports an existing sample and can apply its phase as a new input; the model then recalculates. Neither chart is observed data or a forecast. Existing scenario and terrain limitations apply.
+
+New endpoints: `GET /api/south-pole-map`, `POST /api/south-pole-elevations` and `POST /api/south-pole-route`. The grid is cached after checksum validation; an unavailable grid returns 503. It may take several seconds to decode on first use. Independent geographic landmark alignment, scientific fitness, manual accessibility, and performance reviews remain outstanding.
