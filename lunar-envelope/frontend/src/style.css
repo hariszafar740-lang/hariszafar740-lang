@@ -5,3 +5,106 @@
 .tour-button{border:1px solid #37535b;background:#14232b;color:#a5dfe3;padding:10px 12px;font-size:9px;letter-spacing:.08em;font-weight:700;border-radius:4px;white-space:nowrap}.tour-button:hover{border-color:#8be0e6}.pdf-button{background:transparent;color:#9bdee3}.header-right{gap:12px}.plan-card{margin-top:12px;border:1px solid #25343e;border-radius:6px;background:#0d171f;padding:15px}.plan-strip{display:flex;gap:1px;height:16px;margin:16px 0 7px}.plan-strip span{flex:1;background:#e0a668;min-width:1px}.plan-strip .low{background:#75c7aa}.plan-strip .high{background:#c76f63}.plan-scale{display:flex;justify-content:space-between;font-size:8px;letter-spacing:.08em;color:#718994}.plan-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:17px}.plan-summary small,.plan-summary b{display:block}.plan-summary small{font-size:8px;letter-spacing:.07em;color:#718994}.plan-summary b{margin-top:6px;font:600 13px 'Space Grotesk',sans-serif;color:#d8e9e8}.plan-card p{color:#9bacae;font-size:10px;line-height:1.5;margin:14px 0 0}.window-list{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}.window-list span{font-size:9px;color:#a5d6c1;border:1px solid #315c4a;background:#132a20;padding:5px;border-radius:3px}.compare-row{border-top:1px solid #28424b;padding-top:10px;display:flex;justify-content:space-between;gap:8px;align-items:center;color:#85a7af;font-size:8px;letter-spacing:.05em}.compare-row b{font:600 13px 'Space Grotesk',sans-serif;color:#daeeee;white-space:nowrap}.tour-dots{display:flex;gap:7px;margin-top:23px}.tour-dots span{width:7px;height:7px;border-radius:50%;background:#3f5660}.tour-dots .active{background:#7ce3ea}.tour-actions{display:flex;justify-content:space-between;margin-top:24px}.tour-actions .export{margin:0}@media(max-width:950px){.header-right .tour-button{padding:8px;font-size:8px}}@media(max-width:650px){.header-right .tour-button{font-size:0}.header-right .tour-button:after{content:'TOUR';font-size:9px}.header-right{gap:6px}.pdf-button{padding:9px 7px}.plan-summary{grid-template-columns:1fr 1fr}.plan-summary>div:last-child{grid-column:1/-1}}
 .pdf-button:hover{background:#243e46;color:#d4fcfc}
 .coordinate-inputs>small{grid-column:1/-1;color:#91a5ad;font-size:9px}
+
+.globe-texture-status {
+  position: absolute;
+  right: 12px;
+  bottom: 10px;
+  z-index: 2;
+  max-width: 55%;
+  padding: 5px 8px;
+  border-radius: 4px;
+  background: #07131ee8;
+  color: #d6ecee;
+  font-size: 10px;
+  line-height: 1.3;
+  text-align: right;
+  pointer-events: none;
+}
+
+/* Globe presentation: visual lighting is not a physical forecast. */
+.globe-wrap {
+  background: radial-gradient(
+    ellipse at 50% 46%,
+    #1c3041 0,
+    #0d1c2a 48%,
+    #07121d 100%
+  );
+}
+.globe-caption span {
+  color: #d1e8eb;
+  font-weight: 700;
+}
+.globe-caption small { color: #b1c4ca; }
+.sun-tag { color: #f3d5a5; }
+.sun-tag small { color: #c4d0cf; }
+.globe-legend { color: #c2d5d9; }
+
+@media (max-width: 650px) {
+  .globe-texture-status {
+    max-width: 58%;
+    font-size: 9px;
+  }
+  .globe-caption {
+    max-width: 38%;
+    font-size: 8px;
+  }
+  .globe-caption small { font-size: 9px; }
+  .sun-tag {
+    max-width: 48%;
+    text-align: right;
+    font-size: 7px;
+  }
+}
+
+.globe-controls {
+  position: absolute;
+  z-index: 3;
+  right: 12px;
+  top: 65px;
+  display: flex;
+  gap: 5px;
+}
+.globe-controls button {
+  border: 1px solid #73929e;
+  background: #0d202be8;
+  color: #e8f8fa;
+  border-radius: 5px;
+  min-width: 38px;
+  min-height: 38px;
+  padding: 7px 10px;
+  font-size: 11px;
+  font-weight: 700;
+}
+.globe-controls button:hover { background: #254652; }
+.globe-controls button:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 2px;
+}
+@media (max-width: 650px) {
+  .globe-controls { top: 67px; right: 9px; }
+  .globe-controls button {
+    min-width: 36px;
+    min-height: 36px;
+    padding: 6px;
+    font-size: 10px;
+  }
+}
+
+.webgl-unavailable {
+  position: absolute;
+  z-index: 3;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: min(80%, 360px);
+  margin: 0;
+  padding: 15px;
+  border: 1px solid #73929e;
+  border-radius: 6px;
+  background: #102632;
+  color: #e9f7f8;
+  font-size: 13px;
+  line-height: 1.5;
+  text-align: center;
+}

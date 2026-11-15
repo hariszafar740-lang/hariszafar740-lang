@@ -102,6 +102,17 @@ try {
   await page.getByRole('button',{name:'CHECK NASA DONKI'}).click();
   await page.getByText('Live NASA DONKI connection disabled.',{exact:false}).waitFor();
   await page.getByRole('button',{name:'EXOSPHERE LAB'}).click();
+  await page.getByText('NASA SVS LROC-derived imagery · visual only').waitFor();
+  await page.getByText('VISUAL LIGHTING · NOT A FORECAST').waitFor();
+  await page.getByRole('button',{name:'Zoom in on globe'}).click();
+  await page.getByRole('button',{name:'Zoom out on globe'}).click();
+  await page.getByRole('button',{name:'Reset globe view'}).click();
+  const initialCoordinates=await page.locator('.viewport-bottom b').innerText();
+  await page.locator('.globe-canvas canvas').click();
+  await page.waitForFunction(
+    previous=>document.querySelector('.viewport-bottom b')?.textContent?.trim()!==previous.trim(),
+    initialCoordinates
+  );
   await page.getByText('30-DAY SCENARIO SCREENING').waitFor();
   await page.getByRole('button',{name:'GUIDED TOUR'}).click();
   await page.getByText('Choose a landing site').waitFor();
@@ -119,6 +130,22 @@ try {
   assert.equal(csv.suggestedFilename(),'lunar-mission-brief.csv');
   const [pdf]=await Promise.all([page.waitForEvent('download'),page.getByRole('button',{name:'PDF'}).click()]);
   assert.equal(pdf.suggestedFilename(),'lunar-mission-brief.pdf');
+  await page.getByRole('button',{name:'SITE NAVIGATOR'}).click();
+  await page.getByText(
+    'Site A uses coordinates from the Exosphere Lab.',
+    {exact:false}
+  ).waitFor();
+  assert.equal(
+    await page.getByRole('spinbutton',{name:'Site A latitude'}).inputValue(),
+    '-88.6'
+  );
+  assert.equal(
+    await page.getByRole('spinbutton',{name:'Site A longitude'}).inputValue(),
+    '-69.3'
+  );
+  await page.getByText('LOCAL SKY GEOMETRY').waitFor();
+  const handoff=page.locator('.compare-card').first();
+  assert.match(await handoff.innerText(),/-88.6/);
   await page.setViewportSize({width:390,height:844});
   await page.reload({waitUntil:'networkidle'});
   await page.getByText('Find your window').waitFor();
@@ -132,6 +159,33 @@ try {
   await page.getByRole('button',{name:'Toggle controls'}).click();
   await page.getByText('Lunar phase',{exact:true}).waitFor();
   assert.equal(await page.getByRole('button',{name:'PDF'}).isVisible(),true);
+  const fallbackPage=await browser.newPage();
+  await fallbackPage.route('**/assets/lroc_color_2k-*.jpg',route=>route.abort());
+  await fallbackPage.goto(process.env.BASE_URL || 'http://127.0.0.1:8000/',{waitUntil:'networkidle'});
+  await fallbackPage.getByRole('button',{name:'EXOSPHERE LAB'}).click();
+  await fallbackPage.getByText('Illustrative fallback · NASA imagery unavailable').waitFor();
+  await fallbackPage.close();
+  const noWebgl=await browser.newPage();
+  await noWebgl.addInitScript(()=>{
+    const original=HTMLCanvasElement.prototype.getContext;
+    HTMLCanvasElement.prototype.getContext=function(type,...args){
+      if(type==='webgl'||type==='webgl2'||type==='experimental-webgl')return null;
+      return original.call(this,type,...args);
+    };
+  });
+  await noWebgl.goto(
+    process.env.BASE_URL || 'http://127.0.0.1:8000/',
+    {waitUntil:'networkidle'}
+  );
+  await noWebgl.getByRole('button',{name:'EXOSPHERE LAB'}).click();
+  await noWebgl.getByText('3D view unavailable.',{exact:false}).waitFor();
+  assert.equal(
+    await noWebgl.getByRole('spinbutton',{
+      name:'LATITUDE in degrees, press Enter to apply'
+    }).isVisible(),
+    true
+  );
+  await noWebgl.close();
   assert.deepEqual(errors,[]);
   console.log('Desktop and mobile browser smoke checks passed.');
 } finally { await browser.close(); }

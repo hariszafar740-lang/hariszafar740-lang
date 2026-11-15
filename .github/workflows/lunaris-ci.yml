@@ -30,7 +30,7 @@ jobs:
       - name: Install and build frontend
         run: npm ci --prefix frontend && npm run build --prefix frontend
       - name: Run frontend comparison unit tests
-        run: node --test frontend/tests/comparison.test.mjs frontend/tests/export-report.test.mjs
+        run: node --test frontend/tests/comparison.test.mjs frontend/tests/export-report.test.mjs frontend/tests/globe-navigation.test.mjs
       - name: Run API and model checks
         run: python -m pytest -q tests
       - name: Start application for browser checks
