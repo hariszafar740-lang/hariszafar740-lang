@@ -7,6 +7,8 @@ Lunaris is a personal project by **Haris Zafar**, exploring how open planetary o
 
 **Important:** Models are illustrative and unvalidated. The historical Diviner subset is not live telemetry. Do not use any output for mission, equipment or EVA decisions. [Read the complete self-audit and roadmap](AUDIT.md).
 
+**Evidence and reproducibility:** [Selected benchmark summary](docs/VALIDATION.md) · [ephemeris provenance and detailed checks](data/ephemeris/README.md).
+
 ## Site Navigator — Phase 1 status
 
 **Phase 1 is not complete.** This implementation compares 1–3 sites from 2020 through 2030 using a checksum-gated, project-generated table of JPL DE421/NAIF-derived Moon-fixed geometric vectors. It interpolates direction and range separately, computes topocentric Sun and Earth target-center directions and approximate ranges on a spherical Moon, and reports approximate 15-, 30-, or 60-minute midpoint sunlight, Earth-visibility and overlap bins and intervals above chosen fixed clearance angles. Refined threshold transitions use a 15-minute sign scan and one-second bisection bracket; brief or grazing events can be missed, and the bracket is not a physical accuracy guarantee. It does not call Horizons live and does not use current lunar observations. The original third-party 2026 table is a fallback when the extended table fails verification. UTC predictions depend on the pinned leap-second kernel and cannot anticipate future leap seconds. The UI and API support three editable sites. A simple horizontal-panel geometry indicator averages `max(0, sin(solar elevation))`, relative to unshaded normal-incidence irradiance. It is **not electrical power or an energy prediction**: terrain, efficiency, panel temperature, degradation and hardware are not modeled.
@@ -21,7 +23,7 @@ There is **no public hosted demo yet**. GitHub shows the source code, not a runn
 
 ### Option A — open in GitHub Codespaces
 
-1. While the changes are under review, open [pull request #3](https://github.com/hariszafar740-lang/hariszafar740-lang/pull/3), select **Code**, open the **Codespaces** tab, and create a codespace for the pull request. Choose the **Lunaris — lunar environment lab** configuration if prompted. After the changes are merged, create a codespace from the repository’s default branch instead.
+1. Open the [repository](https://github.com/hariszafar740-lang/hariszafar740-lang), select **Code**, open the **Codespaces** tab, and create a codespace from the default branch. Choose the **Lunaris — lunar environment lab** configuration if prompted.
 2. Wait for the dev container to install the Python and Node dependencies and build the frontend. The server should start automatically. Open the forwarded **Lunaris prototype** port 8000 from the Ports tab if a browser tab does not open.
 3. If startup fails, inspect `/tmp/lunaris-codespaces.log` in the Codespace terminal and run `cd lunar-envelope && HOST=0.0.0.0 ./run.sh`. Stop or delete the Codespace afterward to avoid unnecessary usage.
 
@@ -29,13 +31,11 @@ This Codespaces configuration is supplied but has **not been tested on GitHub in
 
 ### Option B — Docker (Windows, macOS, or Linux)
 
-Install Git and Docker Desktop (or Docker Engine), then run these commands in a terminal. They check out the pull request in detached-HEAD mode while it is under review. After it is merged, omit the `git fetch` and `git checkout` lines to use the default branch. The browser app and Python API run together; no local Node or Python install is needed:
+Install Git and Docker Desktop (or Docker Engine), then run these commands in a terminal. The browser app and Python API run together; no local Node or Python install is needed:
 
 ```bash
 git clone https://github.com/hariszafar740-lang/hariszafar740-lang.git
 cd hariszafar740-lang
-git fetch origin refs/pull/3/head
-git checkout --detach FETCH_HEAD
 docker build -t lunaris ./lunar-envelope
 docker run --rm -p 127.0.0.1:8000:8000 lunaris
 ```
@@ -44,13 +44,11 @@ Open [http://127.0.0.1:8000](http://127.0.0.1:8000). Stop with Ctrl+C. Docker bu
 
 ### Option C — native installation (Linux, macOS, Windows)
 
-Requires Git, Python **3.11+**, Node.js **20+** and npm. From a fresh checkout, these commands select the pull request in detached-HEAD mode; after it is merged, omit the `git fetch` and `git checkout` lines to use the default branch:
+Requires Git, Python **3.11+**, Node.js **20+** and npm. From a terminal, clone the default branch:
 
 ```bash
 git clone https://github.com/hariszafar740-lang/hariszafar740-lang.git
 cd hariszafar740-lang
-git fetch origin refs/pull/3/head
-git checkout --detach FETCH_HEAD
 cd lunar-envelope
 ```
 
@@ -77,10 +75,12 @@ Windows users can replace `py -3.11` with another installed Python 3.11+ executa
 
 ### A 90-second walkthrough
 
-1. In the Site Navigator, edit the UTC window, bin size, clearances and up to three sites; choose **COMPARE SCENARIOS**. Move the sky-time slider, pin a baseline, change a date or threshold and compare again. Export JSON or print/save the current result as PDF. Open **EXOSPHERE LAB**, then **GUIDED TOUR**, and select a point or enter coordinates. The globe texture is procedural, not a lunar map.
+1. In the Site Navigator, edit the UTC window, bin size, clearances and up to three sites; choose **COMPARE SCENARIOS**. Move the sky-time slider, pin a baseline, change a date or threshold and compare again. Export JSON or print/save the current result as PDF. Open **EXOSPHERE LAB**, then **GUIDED TOUR**, and select a point or enter coordinates. The globe uses NASA SVS LROC-derived imagery for visual context, with a procedural fallback if loading fails; it is not a scientific map.
 2. Change lunar phase or run a hypothetical stress test; inspect the model output and the 30-day screening strip.
 3. In **Diviner archive**, select **GO TO SAMPLE SITE** to see a historical observation next to an approximate-local-time model estimate. It is not a validation.
 4. Download a **CSV** or **PDF** report. Candidate intervals are screening indicators, **not safe EVA windows**.
+
+JSON exports preserve the last successful site comparison and optional baseline, including model assumptions, limitations and data hashes. Pending edits and optional terrain results are not included; terrain has a separate JSON export. The code revision is not captured automatically.
 
 ## Development and tests
 
@@ -90,7 +90,7 @@ With dependencies installed, start the backend from this directory using `.venv/
 
 All inputs are bounded; the backend is deterministic. Longitude zero is the subsolar point at phase zero; the subsolar longitude travels 360° over a 29.53-day synodic cycle and latitude is fixed at zero. This simplified phase convention is not an ephemeris. No terrain or axial tilt is included. Temperature uses `T⁴ = 95⁴ + max(cos θ,0) (390⁴−95⁴)` K. A scalar current-balance proxy solves electron, ion, and photoelectron currents by bisection. Their amplitudes and characteristic energies are illustrative, not fitted. Neutral species use a simple isothermal barometric scale height `H=kT/(mg)` and illustrative surface abundances; it is not the full Chamberlain model and does not model sputtering or photoionization losses.
 
-Dust concentration and deposition are empirical proxies for meteoroid flux and proximity to the terminator. A 1 μm grain charge and electric-force **magnitude** are compared with gravity plus an assumed cohesion, using an assumed 5 cm field length. This is not a directional loft solution, and the proxy dust concentration is not derived from that force comparison. The solar curve advances lunar phase in six-hour steps and integrates the illustrative deposition rate D in g/m²/day. Retention is `100 exp(-0.8 ∫D dt)` with assumed extinction coefficient 0.8 m²/g. Wind, UV and meteoroid inputs remain fixed during the projection. The risk strip and candidate intervals only screen the proxy thresholds and sunlight; they are not safe-EVA windows. Hazard categories are arbitrary screening thresholds, not validated risk or safe-EVA windows. Presets represent hypothetical slider combinations, not event reconstructions. The lunar texture, particle cloud and shell rings are schematic, not maps or 3D solver grids. Their visual appearance does not constitute a measurement.
+Dust concentration and deposition are empirical proxies for meteoroid flux and proximity to the terminator. A 1 μm grain charge and electric-force **magnitude** are compared with gravity plus an assumed cohesion, using an assumed 5 cm field length. This is not a directional loft solution, and the proxy dust concentration is not derived from that force comparison. The solar curve advances lunar phase in six-hour steps and integrates the illustrative deposition rate D in g/m²/day. Retention is `100 exp(-0.8 ∫D dt)` with assumed extinction coefficient 0.8 m²/g. Wind, UV and meteoroid inputs remain fixed during the projection. The risk strip and candidate intervals only screen the proxy thresholds and sunlight; they are not safe-EVA windows. Hazard categories are arbitrary screening thresholds, not validated risk or safe-EVA windows. Presets represent hypothetical slider combinations, not event reconstructions. The globe uses NASA SVS LROC-derived imagery for visual context, not scientific mapping; a procedural fallback appears if it fails to load. The particle cloud, shell rings and lighting are illustrative, not 3D solver grids or measurements. See [globe image provenance](docs/GLOBE_TEXTURE.md).
 
 ## NASA data status
 

@@ -54,7 +54,7 @@ Test evidence: 37 lunar backend tests, production TypeScript/Vite build, desktop
 - **Dust and power:** electric force is compared by magnitude, not direction, with parameterized gravity and cohesion. Dust density and deposition are independent heuristic proxies; PV loss integrates an assumed exponential attenuation over 6-hour timesteps. No calibration, uncertainty intervals, terrain shielding, thermal drift or flight hardware validation exists.
 - **Observations:** nearest Diviner bin is displayed only within 2 km. The local-time comparison does not match season, topography or historical averaging and must not be presented as validation. At other sites no reference is returned. There is no LADEE replay or claimed observation/model correlation.
 - **Workflow:** presets are hypothetical combinations held constant over the projection. Screening windows are low-category sunlit model intervals, **not safe EVA windows**. Reports explicitly preserve that limitation. There are no validated mitigation recommendations.
-- **3D:** the globe is a procedural texture and simplified lighting; rings and particles are schematic, not spatial grids. The app needs WebGL for the globe and currently has no fully tested no-WebGL fallback.
+- **3D:** the globe uses NASA SVS LROC-derived imagery for visual context, with a procedural fallback; lighting, rings and particles are schematic, not spatial grids. The app needs WebGL for the globe and currently has no fully tested no-WebGL fallback.
 
 ## Priority roadmap toward a competitive result
 
