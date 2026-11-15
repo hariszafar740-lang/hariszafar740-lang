@@ -7,6 +7,8 @@ Lunaris is a personal project by **Haris Zafar**, exploring how open planetary o
 
 **Important:** Models are illustrative and unvalidated. The historical Diviner subset is not live telemetry. Do not use any output for mission, equipment or EVA decisions. [Read the complete self-audit and roadmap](AUDIT.md).
 
+**Evidence and reproducibility:** [Selected benchmark summary](docs/VALIDATION.md) · [ephemeris provenance and detailed checks](data/ephemeris/README.md).
+
 ## Site Navigator — Phase 1 status
 
 **Phase 1 is not complete.** This implementation compares 1–3 sites from 2020 through 2030 using a checksum-gated, project-generated table of JPL DE421/NAIF-derived Moon-fixed geometric vectors. It interpolates direction and range separately, computes topocentric Sun and Earth target-center directions and approximate ranges on a spherical Moon, and reports approximate 15-, 30-, or 60-minute midpoint sunlight, Earth-visibility and overlap bins and intervals above chosen fixed clearance angles. Refined threshold transitions use a 15-minute sign scan and one-second bisection bracket; brief or grazing events can be missed, and the bracket is not a physical accuracy guarantee. It does not call Horizons live and does not use current lunar observations. The original third-party 2026 table is a fallback when the extended table fails verification. UTC predictions depend on the pinned leap-second kernel and cannot anticipate future leap seconds. The UI and API support three editable sites. A simple horizontal-panel geometry indicator averages `max(0, sin(solar elevation))`, relative to unshaded normal-incidence irradiance. It is **not electrical power or an energy prediction**: terrain, efficiency, panel temperature, degradation and hardware are not modeled.
@@ -21,7 +23,7 @@ There is **no public hosted demo yet**. GitHub shows the source code, not a runn
 
 ### Option A — open in GitHub Codespaces
 
-1. While the changes are under review, open [pull request #3](https://github.com/hariszafar740-lang/hariszafar740-lang/pull/3), select **Code**, open the **Codespaces** tab, and create a codespace for the pull request. Choose the **Lunaris — lunar environment lab** configuration if prompted. After the changes are merged, create a codespace from the repository’s default branch instead.
+1. Open the [repository](https://github.com/hariszafar740-lang/hariszafar740-lang), select **Code**, open the **Codespaces** tab, and create a codespace from the default branch. Choose the **Lunaris — lunar environment lab** configuration if prompted.
 2. Wait for the dev container to install the Python and Node dependencies and build the frontend. The server should start automatically. Open the forwarded **Lunaris prototype** port 8000 from the Ports tab if a browser tab does not open.
 3. If startup fails, inspect `/tmp/lunaris-codespaces.log` in the Codespace terminal and run `cd lunar-envelope && HOST=0.0.0.0 ./run.sh`. Stop or delete the Codespace afterward to avoid unnecessary usage.
 
@@ -29,13 +31,11 @@ This Codespaces configuration is supplied but has **not been tested on GitHub in
 
 ### Option B — Docker (Windows, macOS, or Linux)
 
-Install Git and Docker Desktop (or Docker Engine), then run these commands in a terminal. They check out the pull request in detached-HEAD mode while it is under review. After it is merged, omit the `git fetch` and `git checkout` lines to use the default branch. The browser app and Python API run together; no local Node or Python install is needed:
+Install Git and Docker Desktop (or Docker Engine), then run these commands in a terminal. The browser app and Python API run together; no local Node or Python install is needed:
 
 ```bash
 git clone https://github.com/hariszafar740-lang/hariszafar740-lang.git
 cd hariszafar740-lang
-git fetch origin refs/pull/3/head
-git checkout --detach FETCH_HEAD
 docker build -t lunaris ./lunar-envelope
 docker run --rm -p 127.0.0.1:8000:8000 lunaris
 ```
@@ -44,13 +44,11 @@ Open [http://127.0.0.1:8000](http://127.0.0.1:8000). Stop with Ctrl+C. Docker bu
 
 ### Option C — native installation (Linux, macOS, Windows)
 
-Requires Git, Python **3.11+**, Node.js **20+** and npm. From a fresh checkout, these commands select the pull request in detached-HEAD mode; after it is merged, omit the `git fetch` and `git checkout` lines to use the default branch:
+Requires Git, Python **3.11+**, Node.js **20+** and npm. From a terminal, clone the default branch:
 
 ```bash
 git clone https://github.com/hariszafar740-lang/hariszafar740-lang.git
 cd hariszafar740-lang
-git fetch origin refs/pull/3/head
-git checkout --detach FETCH_HEAD
 cd lunar-envelope
 ```
 
@@ -81,6 +79,8 @@ Windows users can replace `py -3.11` with another installed Python 3.11+ executa
 2. Change lunar phase or run a hypothetical stress test; inspect the model output and the 30-day screening strip.
 3. In **Diviner archive**, select **GO TO SAMPLE SITE** to see a historical observation next to an approximate-local-time model estimate. It is not a validation.
 4. Download a **CSV** or **PDF** report. Candidate intervals are screening indicators, **not safe EVA windows**.
+
+JSON exports preserve the last successful site comparison and optional baseline, including model assumptions, limitations and data hashes. Pending edits and optional terrain results are not included; terrain has a separate JSON export. The code revision is not captured automatically.
 
 ## Development and tests
 

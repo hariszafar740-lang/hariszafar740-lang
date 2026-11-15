@@ -35,8 +35,8 @@ def test_project_identity_and_review_access_are_branch_neutral():
     planner=(PROJECT/'frontend/src/Planner.tsx').read_text(encoding='utf-8')
     workflow=(REPO/'.github/workflows/lunaris-ci.yml').read_text(encoding='utf-8')
     assert 'personal project by **Haris Zafar**' in readme
-    assert 'git fetch origin refs/pull/3/head' in readme
-    assert 'git checkout --detach FETCH_HEAD' in readme
+    assert 'git fetch origin refs/pull/3/head' not in readme
+    assert 'git checkout --detach FETCH_HEAD' not in readme
     assert '/api/provenance/ephemeris' in planner
     assert 'HARIS ZAFAR' in planner
     # The push workflow remains enabled for all branches via its paths filter.
